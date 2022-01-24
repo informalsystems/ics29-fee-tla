@@ -36,7 +36,7 @@ Init ==
         Utils!EmptyRecord
       ]
 
-LOCAL DoChanOpenInit(chain_id, counterparty_chain_id, channel_id) ==
+OnChanOpenInit(chain_id, counterparty_chain_id, channel_id) ==
   LET
     channel_states == all_channel_states[chain_id]
   IN
@@ -64,7 +64,7 @@ LOCAL DoChanOpenInit(chain_id, counterparty_chain_id, channel_id) ==
               new_channel_states
             )
 
-LOCAL DoChanOpenTry(chain_id, counterparty_chain_id, channel_id, counterparty_channel_id) ==
+OnChanOpenTry(chain_id, counterparty_chain_id, channel_id, counterparty_channel_id) ==
   LET
     channel_states == all_channel_states[chain_id]
     counterparty_channel_states == all_channel_states[counterparty_chain_id]
@@ -92,7 +92,7 @@ LOCAL DoChanOpenTry(chain_id, counterparty_chain_id, channel_id, counterparty_ch
             new_channel_states
           )
 
-LOCAL DoChannelOpenAck(chain_id, channel_id, counterparty_channel_id) ==
+OnChanOpenAck(chain_id, channel_id, counterparty_channel_id) ==
   LET
     channel_states == all_channel_states[chain_id]
     channel_state == channel_states[channel_id]
@@ -126,7 +126,7 @@ LOCAL DoChannelOpenAck(chain_id, channel_id, counterparty_channel_id) ==
             new_channel_states
           )
 
-LOCAL DoChannelOpenConfirm(chain_id, channel_id) ==
+OnChanOpenConfirm(chain_id, channel_id) ==
   LET
     channel_states == all_channel_states[chain_id]
     channel_state == channel_states[channel_id]
@@ -157,25 +157,25 @@ LOCAL DoChannelOpenConfirm(chain_id, channel_id) ==
             new_channel_states
           )
 
-LOCAL DoAnyChanOpenInit ==
+AnyChanOpenInit(on_chan_open_init(_, _, _)) ==
   \E chain_id \in AllChainIds:
   \E counterparty_chain_id \in AllChainIds:
   \E channel_id \in InitChannelIds \ DOMAIN all_channel_states[chain_id]:
-    DoChanOpenInit(chain_id, counterparty_chain_id, channel_id)
+    on_chan_open_init(chain_id, counterparty_chain_id, channel_id)
 
-LOCAL DoAnyChanOpenTry ==
+AnyChanOpenTry(on_chan_open_try(_, _, _, _)) ==
   \E chain_id \in AllChainIds:
   \E channel_id \in DOMAIN all_channel_states[chain_id]:
     /\  HandshakeState(chain_id, channel_id) = ChanInitState
     /\  \E counterparty_channel_id \in OpenTryChannelIds:
-          DoChanOpenTry(
+          on_chan_open_try(
             CounterpartyChainId(chain_id, channel_id),
             chain_id,
             counterparty_channel_id,
             channel_id
           )
 
-LOCAL DoAnyChanOpenAck ==
+AnyChanOpenAck(on_chan_open_ack(_, _, _)) ==
   \E chain_id \in AllChainIds:
   \E channel_id \in DOMAIN all_channel_states[chain_id]:
     /\  HasChannel(chain_id, channel_id)
@@ -183,13 +183,13 @@ LOCAL DoAnyChanOpenAck ==
     /\  LET
           channel_state == all_channel_states[chain_id][channel_id]
         IN
-          DoChannelOpenAck(
+          on_chan_open_ack(
             channel_state.counterparty_chain_id,
             channel_state.counterparty_channel_id,
             channel_id
           )
 
-LOCAL DoAnyChanOpenConfirm ==
+AnyChanOpenConfirm(on_chan_open_confirm(_, _)) ==
   \E chain_id \in AllChainIds:
   \E channel_id \in AllChannelIds:
     /\  HasChannel(chain_id, channel_id)
@@ -197,16 +197,16 @@ LOCAL DoAnyChanOpenConfirm ==
     /\  LET
           channel_state == all_channel_states[chain_id][channel_id]
         IN
-          DoChannelOpenConfirm(
+          on_chan_open_confirm(
             channel_state.counterparty_chain_id,
             channel_state.counterparty_channel_id
           )
 
 Next ==
-  /\  \/  DoAnyChanOpenInit
-      \/  DoAnyChanOpenTry
-      \/  DoAnyChanOpenAck
-      \/  DoAnyChanOpenConfirm
+  /\  \/  AnyChanOpenInit(OnChanOpenInit)
+      \/  AnyChanOpenTry(OnChanOpenTry)
+      \/  AnyChanOpenAck(OnChanOpenAck)
+      \/  AnyChanOpenConfirm(OnChanOpenConfirm)
 
 
 Unchanged == UNCHANGED << all_channel_states >>

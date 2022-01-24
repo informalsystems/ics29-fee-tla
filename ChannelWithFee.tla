@@ -10,15 +10,26 @@ CONSTANT
   ChanTryOpenState
 
 VARIABLES
-  all_channel_states
+  all_channel_states,
+  fees_supported_table,
+  fees_enabled_table
 
+LOCAL Utils == INSTANCE Utils
 LOCAL BaseChannel == INSTANCE BaseChannel
 
-Init == BaseChannel!Init
+Init ==
+  /\  BaseChannel!Init
+  /\  \E table \in [ AllChainIds -> { TRUE, FALSE } ]:
+        fees_supported_table = table
+  /\  fees_enabled_table = [ chain_id \in AllChainIds |-> Utils!EmptyRecord ]
 
-Next == BaseChannel!Next
+Unchanged ==
+  /\  BaseChannel!Unchanged
+  /\  UNCHANGED << fees_supported_table, fees_enabled_table >>
 
-Unchanged == BaseChannel!Unchanged
+Next ==
+  /\  BaseChannel!Next
+  /\  UNCHANGED << fees_supported_table, fees_enabled_table >>
 
 HasChannel(chain_id, channel_id) ==
   BaseChannel!HasChannel(chain_id, channel_id)

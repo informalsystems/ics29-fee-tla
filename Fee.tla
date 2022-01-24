@@ -6,7 +6,9 @@ LOCAL Utils == INSTANCE Utils
 
 VARIABLES
   bank_balances,
-  all_channel_states
+  all_channel_states,
+  fees_supported_table,
+  fees_enabled_table
 
 AllChainIds == {
     "chain-a"
