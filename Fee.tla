@@ -6,10 +6,13 @@ LOCAL Utils == INSTANCE Utils
 
 VARIABLES
   bank_balances,
-  all_channel_states,
-  init_channel_ids
+  all_channel_states
 
-AllChainIds == { "chain-a", "chain-b", "chain-c" }
+AllChainIds == {
+    "chain-a"
+  , "chain-b"
+  , "chain-c"
+}
 
 AllUsers == {
   "user-1",
@@ -22,8 +25,18 @@ AllModules == {
   "fee-middleware"
 }
 
-AllChannelIds == {
-  "channel-1", "channel-2", "channel-3"
+InitChannelIds == {
+    "channel-1"
+  , "channel-2"
+  \* , "channel-3"
+  \* , "channel-4"
+}
+
+OpenTryChannelIds == {
+    "channel-9"
+  , "channel-8"
+  \* , "channel-7"
+  \* , "channel-6"
 }
 
 ChanInitState == "Init"
@@ -31,6 +44,8 @@ ChanOpenState == "Open"
 ChanTryOpenState == "TryOpen"
 
 InitialBalancePerUser == 1000
+
+AllChannelIds == InitChannelIds \union OpenTryChannelIds
 
 Null == "NULL"
 
@@ -52,10 +67,10 @@ Invariant ==
   /\ Bank!Invariant
 
 WantedState ==
-  /\  Channel!HasChannel("chain-b", "channel-2")
-  /\  Channel!HasChannel("chain-a", "channel-1")
-  /\  Channel!ChannelStateEquals("chain-a", "channel-1", "chain-b", ChanOpenState)
-  /\  Channel!ChannelStateEquals("chain-b", "channel-2", "chain-a", ChanOpenState)
+  /\  \E channel_id \in AllChannelIds:
+        Channel!ChainsConnected("chain-a", "chain-b", channel_id)
+  \* /\  \E channel_id \in AllChannelIds:
+  \*       Channel!ChainsConnected("chain-b", "chain-c", channel_id)
 
 WantedStateInvariant ==
   /\  ~WantedState

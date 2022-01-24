@@ -3,14 +3,14 @@
 CONSTANT
   Null,
   AllChainIds,
-  AllChannelIds,
+  InitChannelIds,
+  OpenTryChannelIds,
   ChanInitState,
   ChanOpenState,
   ChanTryOpenState
 
 VARIABLES
-  all_channel_states,
-  init_channel_ids
+  all_channel_states
 
 LOCAL BaseChannel == INSTANCE BaseChannel
 
@@ -26,7 +26,7 @@ HasChannel(chain_id, channel_id) ==
 TotalChannels(chain_id) ==
   BaseChannel!TotalChannels(chain_id)
 
-ChannelStateEquals(chain_id, channel_id, counterparty_chain_id, handshake_state) ==
-  BaseChannel!ChannelStateEquals(chain_id, channel_id, counterparty_chain_id, handshake_state)
+ChainsConnected(chain_id, counterparty_chain_id, channel_id) ==
+  BaseChannel!ChainsConnected(chain_id, counterparty_chain_id, channel_id)
 
 =====
