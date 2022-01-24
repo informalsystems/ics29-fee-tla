@@ -6,8 +6,9 @@ CONSTANT
   Null,
   AllChainIds,
   AllChannelIds,
-  ChanOpenInitState,
-  ChanOpenTryState
+  ChanInitState,
+  ChanOpenState,
+  ChanTryOpenState
 
 LOCAL Utils == INSTANCE Utils
 
@@ -27,6 +28,10 @@ HasChannel(chain_id, channel_id) ==
 TotalChannels(chain_id) ==
   Cardinality(DOMAIN all_channel_states[chain_id])
 
+\* Choose a smaller subset of channel IDs from AllChannelIds
+\* that can be used for ChanOpenInit. This is to ensure that
+\* we can keep AllChannelIds small while also do not exhaust
+\* all IDs for ChanOpenInit and have none left for ChanOpenTry.
 LOCAL InitChannelIds ==
   LET
     all_channels_count == Cardinality(AllChannelIds)
@@ -55,7 +60,7 @@ LOCAL DoChanOpenInit(chain_id, counterparty_chain_id) ==
     /\  LET
           channel_state == [
             handshake_state
-              |-> ChanOpenInitState,
+              |-> ChanInitState,
             counterparty_chain_id
               |-> counterparty_chain_id,
             counterparty_channel_id
@@ -80,13 +85,11 @@ LOCAL DoChanOpenTry(chain_id, counterparty_chain_id, channel_id, counterparty_ch
     channel_states == all_channel_states[chain_id]
     counterparty_channel_states == all_channel_states[counterparty_chain_id]
   IN
-    /\  ~Utils!HasKey(channel_states, channel_id)
-    /\  Utils!HasKey(counterparty_channel_states, counterparty_channel_id)
-    /\  counterparty_channel_states[counterparty_channel_id].handshake_state = ChanOpenInitState
+    /\  counterparty_channel_states[counterparty_channel_id].handshake_state = ChanInitState
     /\  LET
           channel_state == [
             handshake_state
-              |-> ChanOpenTryState,
+              |-> ChanTryOpenState,
             counterparty_chain_id
               |-> counterparty_chain_id,
             counterparty_channel_id
@@ -105,6 +108,70 @@ LOCAL DoChanOpenTry(chain_id, counterparty_chain_id, channel_id, counterparty_ch
             new_channel_states
           )
 
+LOCAL DoChannelOpenAck(chain_id, channel_id, counterparty_channel_id) ==
+  LET
+    channel_states == all_channel_states[chain_id]
+    channel_state == channel_states[channel_id]
+    counterparty_chain_id == channel_state.counterparty_chain_id
+    counterparty_channel_states == all_channel_states[counterparty_chain_id]
+    counterparty_channel_state == counterparty_channel_states[counterparty_channel_id]
+  IN
+    /\  channel_state.handshake_state = ChanInitState
+    /\  counterparty_channel_state.handshake_state = ChanTryOpenState
+    /\  counterparty_channel_state.counterparty_chain_id = chain_id
+    /\  counterparty_channel_state.counterparty_channel_id = channel_id
+    /\  LET
+          new_channel_state == [
+            handshake_state
+              |-> ChanOpenState,
+            counterparty_chain_id
+              |-> counterparty_chain_id,
+            counterparty_channel_id
+              |-> counterparty_channel_id
+          ]
+
+          new_channel_states == Utils!UpdateEntry(
+            channel_states,
+            channel_id,
+            new_channel_state
+          )
+        IN
+          all_channel_states' = Utils!UpdateEntry(
+            all_channel_states,
+            chain_id,
+            new_channel_states
+          )
+
+LOCAL DoChannelOpenConfirm(chain_id, channel_id) ==
+  LET
+    channel_states == all_channel_states[chain_id]
+    channel_state == channel_states[channel_id]
+    counterparty_chain_id == channel_state.counterparty_chain_id
+    counterparty_channel_id == channel_state.counterparty_channel_id
+    counterparty_channel_state == all_channel_states[counterparty_chain_id][counterparty_channel_id]
+  IN
+    /\  channel_state.handshake_state = ChanTryOpenState
+    /\  counterparty_channel_state.handshake_state = ChanOpenState
+    /\  counterparty_channel_state.counterparty_chain_id = chain_id
+    /\  counterparty_channel_state.counterparty_channel_id = channel_id
+    /\  LET
+          new_channel_state == Utils!UpdateEntry(
+            channel_state,
+            "handshake_state",
+            ChanOpenState
+          )
+
+          new_channel_states == Utils!UpdateEntry(
+            channel_states,
+            channel_id,
+            new_channel_state
+          )
+        IN
+          all_channel_states' = Utils!UpdateEntry(
+            all_channel_states,
+            chain_id,
+            new_channel_states
+          )
 
 LOCAL DoAnyChanOpenInit ==
   \E chain_id \in AllChainIds:
@@ -115,7 +182,7 @@ LOCAL DoAnyChanOpenTry ==
   \E chain_id \in AllChainIds:
   \E channel_id \in AllChannelIds:
     /\  HasChannel(chain_id, channel_id)
-    /\  HandshakeState(chain_id, channel_id) = ChanOpenInitState
+    /\  HandshakeState(chain_id, channel_id) = ChanInitState
     /\  \E counterparty_channel_id \in AllChannelIds:
           DoChanOpenTry(
             CounterpartyChainId(chain_id, channel_id),
@@ -124,10 +191,40 @@ LOCAL DoAnyChanOpenTry ==
             channel_id
           )
 
+LOCAL DoAnyChanOpenAck ==
+  \E chain_id \in AllChainIds:
+  \E channel_id \in AllChannelIds:
+    /\  HasChannel(chain_id, channel_id)
+    /\  HandshakeState(chain_id, channel_id) = ChanTryOpenState
+    /\  LET
+          channel_state == all_channel_states[chain_id][channel_id]
+        IN
+          DoChannelOpenAck(
+            channel_state.counterparty_chain_id,
+            channel_state.counterparty_channel_id,
+            channel_id
+          )
+
+LOCAL DoAnyChanOpenConfirm ==
+  \E chain_id \in AllChainIds:
+  \E channel_id \in AllChannelIds:
+    /\  HasChannel(chain_id, channel_id)
+    /\  HandshakeState(chain_id, channel_id) = ChanOpenState
+    /\  LET
+          channel_state == all_channel_states[chain_id][channel_id]
+        IN
+          DoChannelOpenConfirm(
+            channel_state.counterparty_chain_id,
+            channel_state.counterparty_channel_id
+          )
+
 Next ==
   /\  UNCHANGED init_channel_ids
   /\  \/  DoAnyChanOpenInit
       \/  DoAnyChanOpenTry
+      \/  DoAnyChanOpenAck
+      \/  DoAnyChanOpenConfirm
+
 
 Unchanged == UNCHANGED << all_channel_states, init_channel_ids >>
 

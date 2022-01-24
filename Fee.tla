@@ -9,7 +9,7 @@ VARIABLES
   all_channel_states,
   init_channel_ids
 
-AllChainIds == { "chain-a", "chain-b" }
+AllChainIds == { "chain-a", "chain-b", "chain-c" }
 
 AllUsers == {
   "user-1",
@@ -26,8 +26,9 @@ AllChannelIds == {
   "channel-1", "channel-2", "channel-3"
 }
 
-ChanOpenInitState == "CHAN_OPEN_INIT"
-ChanOpenTryState == "CHAN_OPEN_TRY"
+ChanInitState == "Init"
+ChanOpenState == "Open"
+ChanTryOpenState == "TryOpen"
 
 InitialBalancePerUser == 1000
 
@@ -53,8 +54,8 @@ Invariant ==
 WantedState ==
   /\  Channel!HasChannel("chain-b", "channel-2")
   /\  Channel!HasChannel("chain-a", "channel-1")
-  /\  Channel!ChannelStateEquals("chain-a", "channel-1", "chain-b", ChanOpenInitState)
-  /\  Channel!ChannelStateEquals("chain-b", "channel-2", "chain-a", ChanOpenTryState)
+  /\  Channel!ChannelStateEquals("chain-a", "channel-1", "chain-b", ChanOpenState)
+  /\  Channel!ChannelStateEquals("chain-b", "channel-2", "chain-a", ChanOpenState)
 
 WantedStateInvariant ==
   /\  ~WantedState

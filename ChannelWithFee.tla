@@ -4,8 +4,9 @@ CONSTANT
   Null,
   AllChainIds,
   AllChannelIds,
-  ChanOpenInitState,
-  ChanOpenTryState
+  ChanInitState,
+  ChanOpenState,
+  ChanTryOpenState
 
 VARIABLES
   all_channel_states,
