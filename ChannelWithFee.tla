@@ -11,17 +11,18 @@ CONSTANT
   ChanOpenState,
   ChanTryOpenState,
   BaseVersions,
-  VersionFees
+  VersionFees,
+  MergeVersions(_, _)
 
 VARIABLES
   all_channel_states,
+  connected_channels,
   fees_supported_table,
   fees_enabled_table
 
 
 LOCAL Utils == INSTANCE Utils
-LOCAL BaseChannel == INSTANCE BaseChannel WITH
-  MergeVersions <- \o
+LOCAL BaseChannel == INSTANCE BaseChannel
 
 Init ==
   /\  BaseChannel!Init
@@ -33,9 +34,17 @@ Unchanged ==
   /\  BaseChannel!Unchanged
   /\  UNCHANGED << fees_supported_table, fees_enabled_table >>
 
+FeesSupported(chain_id) ==
+  fees_supported_table[chain_id]
+
+FeesEnabled(chain_id, channel_id) ==
+  /\  FeesSupported(chain_id)
+  /\  Utils!HasKey(fees_enabled_table[chain_id], channel_id)
+  /\  fees_enabled_table[chain_id][channel_id]
+
 OnChanOpenInit(chain_id, counterparty_chain_id, channel_id, versions_acc) ==
   /\  ~Utils!HasKey(fees_enabled_table[chain_id], channel_id)
-  /\  IF fees_supported_table[chain_id]
+  /\  IF FeesSupported(chain_id)
       THEN
         \E enabled \in BOOLEAN:
           LET
@@ -46,7 +55,7 @@ OnChanOpenInit(chain_id, counterparty_chain_id, channel_id, versions_acc) ==
             )
 
             new_versions_acc == IF enabled
-              THEN Append(<<VersionFees>>, versions_acc)
+              THEN MergeVersions(<<VersionFees>>, versions_acc)
               ELSE versions_acc
           IN
           /\  fees_enabled_table' = Utils!UpdateEntry(
@@ -59,9 +68,69 @@ OnChanOpenInit(chain_id, counterparty_chain_id, channel_id, versions_acc) ==
         /\  UNCHANGED << fees_enabled_table >>
         /\  BaseChannel!OnChanOpenInit(chain_id, counterparty_chain_id, channel_id, versions_acc)
 
+OnChanOpenTry(chain_id, counterparty_chain_id, channel_id, counterparty_channel_id, versions, versions_acc) ==
+  IF FeesSupported(chain_id) /\ Head(versions) = VersionFees
+  THEN
+    /\  LET
+          new_fees_enabled == Utils!AddEntry(
+            fees_enabled_table[chain_id],
+            channel_id,
+            TRUE
+          )
+        IN
+          fees_enabled_table' = Utils!AddEntry(
+            fees_enabled_table,
+            chain_id,
+            new_fees_enabled
+          )
+    /\  BaseChannel!OnChanOpenTry(
+          chain_id,
+          counterparty_chain_id,
+          channel_id,
+          counterparty_channel_id,
+          Tail(versions),
+          MergeVersions(versions_acc, <<VersionFees>>)
+        )
+  ELSE
+    /\ UNCHANGED fees_enabled_table
+    /\  BaseChannel!OnChanOpenTry(
+          chain_id,
+          counterparty_chain_id,
+          channel_id,
+          counterparty_channel_id,
+          versions,
+          versions_acc
+        )
+
+OnChanOpenAck(chain_id, channel_id, counterparty_channel_id, versions) ==
+  IF FeesEnabled(chain_id, channel_id)
+  THEN
+    /\  Head(versions) = VersionFees
+    /\  BaseChannel!OnChanOpenAck(
+          chain_id,
+          channel_id,
+          counterparty_channel_id,
+          Tail(versions)
+        )
+  ELSE
+    BaseChannel!OnChanOpenAck(
+      chain_id,
+      channel_id,
+      counterparty_channel_id,
+      versions
+    )
+
 Next ==
-  /\  BaseChannel!Next
-  /\  UNCHANGED << fees_supported_table, fees_enabled_table >>
+  /\  UNCHANGED << fees_supported_table >>
+  /\  \/  BaseChannel!AnyChanOpenInit(OnChanOpenInit)
+      \/  BaseChannel!AnyChanOpenTry(OnChanOpenTry)
+      \/  /\  UNCHANGED << fees_enabled_table >>
+          /\  \/  BaseChannel!AnyChanOpenAck(OnChanOpenAck)
+              \/  BaseChannel!AnyChanOpenConfirm(BaseChannel!OnChanOpenConfirm)
+
+\* Next ==
+\*   /\  UNCHANGED << fees_supported_table, fees_enabled_table >>
+\*   /\  BaseChannel!Next
 
 HasChannel(chain_id, channel_id) ==
   BaseChannel!HasChannel(chain_id, channel_id)
@@ -71,5 +140,14 @@ TotalChannels(chain_id) ==
 
 ChainsConnected(chain_id, counterparty_chain_id, channel_id) ==
   BaseChannel!ChainsConnected(chain_id, counterparty_chain_id, channel_id)
+
+ChannelsConnected(chain_id, channel_id, counterparty_chain_id, counterparty_channel_id) ==
+  BaseChannel!ChannelsConnected(chain_id, channel_id, counterparty_chain_id, counterparty_channel_id)
+
+Invariant ==
+  TRUE
+\*   /\  \A chain_id_a, chain_id_b \in AllChainIds:
+\*       \A channel_id_a, channel_id_b \in BaseChannel!AllChannelIds:
+\*         FeesEnabled(chain_id_a, channel_id_a) => TRUE
 
 =====

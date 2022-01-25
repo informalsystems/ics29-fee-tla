@@ -16,9 +16,10 @@ CONSTANT
 LOCAL Utils == INSTANCE Utils
 
 VARIABLES
-  all_channel_states
+  all_channel_states,
+  connected_channels
 
-LOCAL AllChannelIds == InitChannelIds \union OpenTryChannelIds
+AllChannelIds == InitChannelIds \union OpenTryChannelIds
 
 HandshakeState(chain_id, channel_id) ==
   all_channel_states[chain_id][channel_id].handshake_state
@@ -32,11 +33,22 @@ HasChannel(chain_id, channel_id) ==
 TotalChannels(chain_id) ==
   Cardinality(DOMAIN all_channel_states[chain_id])
 
+ChannelsConnected(
+  chain_id,
+  channel_id,
+  counterparty_chain_id,
+  counterparty_channel_id
+) ==
+    { << chain_id, channel_id >>, << counterparty_chain_id, counterparty_channel_id >> }
+    \in
+    connected_channels
+
 Init ==
   /\  all_channel_states =
       [ c \in AllChainIds |->
         Utils!EmptyRecord
       ]
+  /\  connected_channels = {}
 
 ValidVersions(versions) ==
   /\  Len(versions) = 1
@@ -47,6 +59,7 @@ OnChanOpenInit(chain_id, counterparty_chain_id, channel_id, versions_acc) ==
     channel_states == all_channel_states[chain_id]
   IN
     /\  ~Utils!HasKey(channel_states, channel_id)
+    /\  UNCHANGED connected_channels
     /\  \E version \in BaseVersions:
         LET
           channel_state == [
@@ -80,6 +93,7 @@ OnChanOpenTry(chain_id, counterparty_chain_id, channel_id, counterparty_channel_
   IN
     /\  ValidVersions(versions)
     /\  counterparty_channel_states[counterparty_channel_id].handshake_state = ChanInitState
+    /\  UNCHANGED connected_channels
     /\  LET
           channel_state == [
             handshake_state
@@ -117,6 +131,7 @@ OnChanOpenAck(chain_id, channel_id, counterparty_channel_id, versions) ==
     /\  counterparty_channel_state.handshake_state = ChanTryOpenState
     /\  counterparty_channel_state.counterparty_chain_id = chain_id
     /\  counterparty_channel_state.counterparty_channel_id = channel_id
+    /\  UNCHANGED connected_channels
     /\  LET
           new_channel_state_1 == Utils!UpdateEntry(
             channel_state,
@@ -167,11 +182,16 @@ OnChanOpenConfirm(chain_id, channel_id) ==
             new_channel_state
           )
         IN
-          all_channel_states' = Utils!UpdateEntry(
-            all_channel_states,
-            chain_id,
-            new_channel_states
-          )
+        /\  all_channel_states' = Utils!UpdateEntry(
+              all_channel_states,
+              chain_id,
+              new_channel_states
+            )
+
+        /\  connected_channels' = connected_channels \union
+              { { << chain_id, channel_id >>,
+                  << counterparty_chain_id, counterparty_channel_id >>
+                } }
 
 AnyChanOpenInit(on_chan_open_init(_, _, _, _)) ==
   \E chain_id \in AllChainIds:
@@ -234,8 +254,7 @@ Next ==
       \/  AnyChanOpenAck(OnChanOpenAck)
       \/  AnyChanOpenConfirm(OnChanOpenConfirm)
 
-
-Unchanged == UNCHANGED << all_channel_states >>
+Unchanged == UNCHANGED << all_channel_states, connected_channels >>
 
 ChainsConnected(chain_id, counterparty_chain_id, channel_id) ==
   LET

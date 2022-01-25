@@ -3,7 +3,7 @@
 AllChainIds == {
     "chain-a"
   , "chain-b"
-  , "chain-c"
+\*   , "chain-c"
 }
 
 AllUsers == {
