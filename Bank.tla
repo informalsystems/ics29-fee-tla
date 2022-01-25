@@ -51,19 +51,21 @@ Transfer(chain_id, sender_account, receiver_account, amount) ==
   LET
     chain_balances == bank_balances[chain_id]
     sender_balance == chain_balances[sender_account]
-    receiver_balance == chain_balances[receiver_account]
   IN
   /\  amount > 0
   /\  sender_balance >= amount
-  /\  sender_account /= receiver_account
   /\  LET
         new_sender_balance == sender_balance - amount
-        new_receiver_balance == receiver_balance + amount
         new_chain_balances_1 == Utils!UpdateEntry(
           chain_balances,
           sender_account,
           new_sender_balance
         )
+
+        \* Get the receiver balance after updating the chain balance,
+        \* in case if the sender and receiver are the same.
+        receiver_balance == new_chain_balances_1[receiver_account]
+        new_receiver_balance == receiver_balance + amount
         new_chain_balances_2 == Utils!UpdateEntry(
           new_chain_balances_1,
           receiver_account,

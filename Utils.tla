@@ -17,4 +17,6 @@ EntryEquals(record, key, value) ==
   /\ HasKey(record, key)
   /\ record[key] = value
 
+Identity(x) == x
+
 =====
