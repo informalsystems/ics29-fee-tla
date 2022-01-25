@@ -28,7 +28,7 @@ Init ==
   /\  BaseChannel!Init
   /\  \E table \in [ AllChainIds -> BOOLEAN ]:
         fees_supported_table = table
-  /\  fees_enabled_table = [ chain_id \in AllChainIds |-> Utils!EmptyRecord ]
+  /\  fees_enabled_table = Utils!EmptyRecord
 
 Unchanged ==
   /\  BaseChannel!Unchanged
@@ -39,29 +39,23 @@ FeesSupported(chain_id) ==
 
 FeesEnabled(chain_id, channel_id) ==
   /\  FeesSupported(chain_id)
-  /\  Utils!HasKey(fees_enabled_table[chain_id], channel_id)
-  /\  fees_enabled_table[chain_id][channel_id]
+  /\  Utils!HasKey(fees_enabled_table, << chain_id, channel_id >>)
+  /\  fees_enabled_table[chain_id, channel_id]
 
 OnChanOpenInit(chain_id, counterparty_chain_id, channel_id, versions_acc) ==
-  /\  ~Utils!HasKey(fees_enabled_table[chain_id], channel_id)
+  /\  ~Utils!HasKey(fees_enabled_table, << chain_id, channel_id >>)
   /\  IF FeesSupported(chain_id)
       THEN
         \E enabled \in BOOLEAN:
           LET
-            new_fees_enabled == Utils!AddEntry(
-              fees_enabled_table[chain_id],
-              channel_id,
-              enabled
-            )
-
             new_versions_acc == IF enabled
               THEN MergeVersions(<<VersionFees>>, versions_acc)
               ELSE versions_acc
           IN
-          /\  fees_enabled_table' = Utils!UpdateEntry(
+          /\  fees_enabled_table' = Utils!AddEntry(
                 fees_enabled_table,
-                chain_id,
-                new_fees_enabled
+                << chain_id, channel_id >>,
+                enabled
               )
           /\  BaseChannel!OnChanOpenInit(chain_id, counterparty_chain_id, channel_id, new_versions_acc)
       ELSE
@@ -71,18 +65,11 @@ OnChanOpenInit(chain_id, counterparty_chain_id, channel_id, versions_acc) ==
 OnChanOpenTry(chain_id, counterparty_chain_id, channel_id, counterparty_channel_id, versions, versions_acc) ==
   IF FeesSupported(chain_id) /\ Head(versions) = VersionFees
   THEN
-    /\  LET
-          new_fees_enabled == Utils!AddEntry(
-            fees_enabled_table[chain_id],
-            channel_id,
-            TRUE
-          )
-        IN
-          fees_enabled_table' = Utils!AddEntry(
-            fees_enabled_table,
-            chain_id,
-            new_fees_enabled
-          )
+    /\  fees_enabled_table' = Utils!AddEntry(
+          fees_enabled_table,
+          << chain_id, channel_id >>,
+          TRUE
+        )
     /\  BaseChannel!OnChanOpenTry(
           chain_id,
           counterparty_chain_id,
@@ -137,9 +124,6 @@ HasChannel(chain_id, channel_id) ==
 
 TotalChannels(chain_id) ==
   BaseChannel!TotalChannels(chain_id)
-
-ChainsConnected(chain_id, counterparty_chain_id, channel_id) ==
-  BaseChannel!ChainsConnected(chain_id, counterparty_chain_id, channel_id)
 
 ChannelsConnected(chain_id, channel_id, counterparty_chain_id, counterparty_channel_id) ==
   BaseChannel!ChannelsConnected(chain_id, channel_id, counterparty_chain_id, counterparty_channel_id)

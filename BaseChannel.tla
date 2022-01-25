@@ -256,23 +256,4 @@ Next ==
 
 Unchanged == UNCHANGED << all_channel_states, connected_channels >>
 
-ChainsConnected(chain_id, counterparty_chain_id, channel_id) ==
-  LET
-    channel_states == all_channel_states[chain_id]
-    counterparty_channel_states == all_channel_states[counterparty_chain_id]
-  IN
-    /\  Utils!HasKey(channel_states, channel_id)
-    /\  LET
-          channel_state == channel_states[channel_id]
-        IN
-          /\  channel_state.handshake_state = ChanOpenState
-          /\  channel_state.counterparty_chain_id = counterparty_chain_id
-          /\  LET
-                counterparty_channel_id == channel_state.counterparty_channel_id
-                counterparty_channel_state == counterparty_channel_states[counterparty_channel_id]
-              IN
-                /\  counterparty_channel_state.handshake_state = ChanOpenState
-                /\  counterparty_channel_state.counterparty_chain_id = chain_id
-                /\  counterparty_channel_state.counterparty_channel_id = channel_id
-
 =====

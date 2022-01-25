@@ -27,8 +27,9 @@ Invariant ==
 WantedState ==
   \E chain_a, chain_b \in AllChainIds:
   \E channel_id_a, channel_id_b \in AllChannelIds:
-    \* /\  Channel!FeesSupported(chain_a)
-    \* /\  Channel!FeesSupported(chain_b)
+    /\  chain_a /= chain_b
+    /\  Channel!FeesSupported(chain_a)
+    /\  Channel!FeesEnabled(chain_b, channel_id_b)
     /\  Channel!ChannelsConnected(chain_a, channel_id_a, chain_b, channel_id_b)
     \* /\  Channel!ChainsConnected(chain_a, chain_b, channel_id_a)
 
