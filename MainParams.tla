@@ -1,4 +1,13 @@
----- MODULE Constants ----
+---- MODULE MainParams ----
+
+VARIABLES
+    bank_balances
+  , all_channel_states
+  , fees_supported_table
+  , fees_enabled_table
+  , connected_channels
+
+Null == "NULL"
 
 AllChainIds == {
     "chain-a"
@@ -41,7 +50,5 @@ VersionFees == "fee_v1"
 InitialBalancePerUser == 1000
 
 AllChannelIds == InitChannelIds \union OpenTryChannelIds
-
-Null == "NULL"
 
 ====

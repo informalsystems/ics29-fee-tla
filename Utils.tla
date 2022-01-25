@@ -10,6 +10,17 @@ AddEntry(record, key, value) ==
 UpdateEntry(record, key, value) ==
   [ record EXCEPT ![key] = value ]
 
+UpdateEntry2(record,
+  key1,
+  value1,
+  key2,
+  value2
+) ==
+  [ record EXCEPT
+        ![key1] = value1,
+        ![key2] = value2
+  ]
+
 HasKey(record, key) ==
   key \in DOMAIN record
 

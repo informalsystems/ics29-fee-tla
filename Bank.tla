@@ -2,7 +2,7 @@
 
 EXTENDS Naturals, TLC, Functions, FiniteSets
 
-CONSTANT
+CONSTANTS
   AllChainIds,
   AllUsers,
   AllModules,

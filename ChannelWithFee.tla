@@ -1,25 +1,8 @@
 ---- MODULE ChannelWithFee -----
 
-EXTENDS Sequences
-
-CONSTANT
-  Null,
-  AllChainIds,
-  InitChannelIds,
-  OpenTryChannelIds,
-  ChanInitState,
-  ChanOpenState,
-  ChanTryOpenState,
-  BaseVersions,
-  VersionFees,
-  MergeVersions(_, _)
-
-VARIABLES
-  all_channel_states,
-  connected_channels,
-  fees_supported_table,
-  fees_enabled_table
-
+EXTENDS
+    Sequences
+  , ChannelWithFeeParams
 
 LOCAL Utils == INSTANCE Utils
 LOCAL BaseChannel == INSTANCE BaseChannel
@@ -79,7 +62,15 @@ OnChanOpenTry(chain_id, counterparty_chain_id, channel_id, counterparty_channel_
           MergeVersions(versions_acc, <<VersionFees>>)
         )
   ELSE
-    /\ UNCHANGED fees_enabled_table
+    /\  IF FeesSupported(chain_id)
+        THEN
+          fees_enabled_table' = Utils!AddEntry(
+            fees_enabled_table,
+            << chain_id, channel_id >>,
+            FALSE
+          )
+        ELSE
+        UNCHANGED fees_enabled_table
     /\  BaseChannel!OnChanOpenTry(
           chain_id,
           counterparty_chain_id,
@@ -122,16 +113,20 @@ Next ==
 HasChannel(chain_id, channel_id) ==
   BaseChannel!HasChannel(chain_id, channel_id)
 
-TotalChannels(chain_id) ==
-  BaseChannel!TotalChannels(chain_id)
-
 ChannelsConnected(chain_id, channel_id, counterparty_chain_id, counterparty_channel_id) ==
   BaseChannel!ChannelsConnected(chain_id, channel_id, counterparty_chain_id, counterparty_channel_id)
 
+\* At any point in time, there should be no two channels that are connected
+\* and in open state, but have one side with fee enabled but the other side
+\* with fee disabled
+NoAsymmetricFeeEnabled ==
+  \A chain_a, chain_b \in AllChainIds:
+  \A channel_id_a, channel_id_b \in BaseChannel!AllChannelIds:
+    ChannelsConnected(chain_a, channel_id_a, chain_b, channel_id_b)
+    =>
+    ( FeesEnabled(chain_a, channel_id_a) <=> FeesEnabled(chain_b, channel_id_b) )
+
 Invariant ==
-  TRUE
-\*   /\  \A chain_id_a, chain_id_b \in AllChainIds:
-\*       \A channel_id_a, channel_id_b \in BaseChannel!AllChannelIds:
-\*         FeesEnabled(chain_id_a, channel_id_a) => TRUE
+  /\  NoAsymmetricFeeEnabled
 
 =====
