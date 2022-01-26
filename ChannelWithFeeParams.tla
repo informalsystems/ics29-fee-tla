@@ -7,7 +7,7 @@ CONSTANTS
     VersionFees
 
 VARIABLES
-  fees_supported_table,
-  fees_enabled_table
+    fees_supported_table
+  , fees_enabled_table
 
 ====

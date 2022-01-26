@@ -15,7 +15,10 @@ Init ==
 
 Unchanged ==
   /\  BaseChannel!Unchanged
-  /\  UNCHANGED << fees_supported_table, fees_enabled_table >>
+  /\  UNCHANGED <<
+          fees_supported_table
+        , fees_enabled_table
+      >>
 
 FeesSupported(chain_id) ==
   fees_supported_table[chain_id]
@@ -32,7 +35,7 @@ OnChanOpenInit(chain_id, counterparty_chain_id, channel_id, versions_acc) ==
         \E enabled \in BOOLEAN:
           LET
             new_versions_acc == IF enabled
-              THEN MergeVersions(<<VersionFees>>, versions_acc)
+              THEN Utils!Concat(<<VersionFees>>, versions_acc)
               ELSE versions_acc
           IN
           /\  fees_enabled_table' = Utils!AddEntry(
@@ -59,7 +62,7 @@ OnChanOpenTry(chain_id, counterparty_chain_id, channel_id, counterparty_channel_
           channel_id,
           counterparty_channel_id,
           Tail(versions),
-          MergeVersions(versions_acc, <<VersionFees>>)
+          Utils!Concat(versions_acc, <<VersionFees>>)
         )
   ELSE
     /\  IF FeesSupported(chain_id)
@@ -98,13 +101,21 @@ OnChanOpenAck(chain_id, channel_id, counterparty_channel_id, versions) ==
       versions
     )
 
-Next ==
+NextChannelAction ==
   /\  UNCHANGED << fees_supported_table >>
   /\  \/  BaseChannel!AnyChanOpenInit(OnChanOpenInit)
       \/  BaseChannel!AnyChanOpenTry(OnChanOpenTry)
       \/  /\  UNCHANGED << fees_enabled_table >>
           /\  \/  BaseChannel!AnyChanOpenAck(OnChanOpenAck)
               \/  BaseChannel!AnyChanOpenConfirm(BaseChannel!OnChanOpenConfirm)
+
+NextPacketAction ==
+  /\  UNCHANGED << fees_supported_table, fees_enabled_table >>
+  /\  BaseChannel!NextPacketAction
+
+Next ==
+  \/  NextChannelAction
+  \/  NextPacketAction
 
 \* Next ==
 \*   /\  UNCHANGED << fees_supported_table, fees_enabled_table >>

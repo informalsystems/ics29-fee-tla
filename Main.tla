@@ -6,8 +6,7 @@ EXTENDS
 
 LOCAL Utils == INSTANCE Utils
 
-LOCAL Channel == INSTANCE ChannelWithFee WITH
-  MergeVersions <- \o
+LOCAL Channel == INSTANCE ChannelWithFee
 
 LOCAL Bank == INSTANCE Bank
 
@@ -34,6 +33,8 @@ FindConnectChannelsWithFeeEnabled ==
     /\  Channel!FeesEnabled(chain_a, channel_id_a)
     /\  Channel!FeesEnabled(chain_b, channel_id_b)
     /\  Channel!ChannelsConnected(chain_a, channel_id_a, chain_b, channel_id_b)
+    /\  \E packet \in AllPackets:
+            << chain_a, channel_id_a, packet >> \in received_packets
 
 WantedState ==
   FindConnectChannelsWithFeeEnabled

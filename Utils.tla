@@ -28,6 +28,9 @@ EntryEquals(record, key, value) ==
   /\ HasKey(record, key)
   /\ record[key] = value
 
+Concat(list1, list2) ==
+  list1 \o list2
+
 Identity(x) == x
 
 =====

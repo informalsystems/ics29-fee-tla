@@ -6,6 +6,9 @@ VARIABLES
   , fees_supported_table
   , fees_enabled_table
   , connected_channels
+  , sent_packets
+  , received_packets
+  , acked_packets
 
 Null == "NULL"
 
@@ -50,5 +53,15 @@ VersionFees == "fee_v1"
 InitialBalancePerUser == 1000
 
 AllChannelIds == InitChannelIds \union OpenTryChannelIds
+
+AllPackets == {
+    "packet-1"
+  , "packet-2"
+  , "packet-3"
+}
+
+BaseAcks == {
+  "ack"
+}
 
 ====
