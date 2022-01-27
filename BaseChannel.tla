@@ -36,9 +36,6 @@ ChannelIsOpen(chain_id, channel_id) ==
 Init ==
   /\  all_channel_states = Utils!EmptyRecord
   /\  connected_channels = {}
-  /\  send_commitments = {}
-  /\  ack_commitments = {}
-  /\  relayed_packets = Utils!EmptyRecord
 
 ValidVersions(versions) ==
   /\  Len(versions) = 1
@@ -49,16 +46,9 @@ ChannelStatesUnchanged == UNCHANGED <<
   , connected_channels
 >>
 
-PacketStatesUnchanged == UNCHANGED <<
-    send_commitments
-  , ack_commitments
-  , relayed_packets
->>
-
 OnChanOpenInit(chain_id, counterparty_chain_id, channel_id, versions_acc) ==
     /\  ~HasChannel(chain_id, channel_id)
     /\  UNCHANGED << connected_channels >>
-    /\  PacketStatesUnchanged
     /\  \E version \in BaseVersions:
         LET
           channel_state == [
@@ -85,7 +75,6 @@ OnChanOpenTry(chain_id, counterparty_chain_id, channel_id, counterparty_channel_
   /\  HasChannel(counterparty_chain_id, counterparty_channel_id)
   /\  all_channel_states[counterparty_chain_id, counterparty_channel_id].handshake_state = ChanInitState
   /\  UNCHANGED connected_channels
-  /\  PacketStatesUnchanged
   /\  LET
         channel_state == [
           handshake_state
@@ -116,7 +105,6 @@ OnChanOpenAck(chain_id, channel_id, counterparty_channel_id, versions) ==
     /\  counterparty_channel_state.counterparty_chain_id = chain_id
     /\  counterparty_channel_state.counterparty_channel_id = channel_id
     /\  UNCHANGED connected_channels
-    /\  PacketStatesUnchanged
     /\  LET
           new_channel_state == Utils!UpdateEntry2(
             channel_state,
@@ -143,7 +131,6 @@ OnChanOpenConfirm(chain_id, channel_id) ==
     /\  counterparty_channel_state.handshake_state = ChanOpenState
     /\  counterparty_channel_state.counterparty_chain_id = chain_id
     /\  counterparty_channel_state.counterparty_channel_id = channel_id
-    /\  PacketStatesUnchanged
     /\  LET
           new_channel_state == Utils!UpdateEntry(
             channel_state,
@@ -220,77 +207,13 @@ AnyChanOpenConfirm(on_chan_open_confirm(_, _)) ==
               counterparty_channel_id
             )
 
-NextChannelAction ==
+Next ==
   \/  AnyChanOpenInit(OnChanOpenInit)
   \/  AnyChanOpenTry(OnChanOpenTry)
   \/  AnyChanOpenAck(OnChanOpenAck)
   \/  AnyChanOpenConfirm(OnChanOpenConfirm)
 
-PacketKey(chain_id, channel_id, packet_id) ==
-  << chain_id, channel_id, packet_id >>
-
-SendPacket(chain_id, channel_id, packet) ==
-      \* It is enough to being able to send packet when only one end
-      \* of the channels is Open, while the other is still in TryOpen
-  /\  ChannelIsOpen(chain_id, channel_id)
-  /\  ChannelStatesUnchanged
-  /\  LET packet_key == PacketKey(chain_id, channel_id, packet)
-      IN
-      \* The packet must be unsent even though if it is already sent,
-      \* there is no effect on the update. However having the predicate
-      \* false will back track the whole state transition when using
-      \* SendPacket together with other atomic steps in fees middleware
-      /\  ~(PacketKey(chain_id, channel_id, packet) \in send_commitments)
-      /\  send_commitments' = { packet_key } \union send_commitments
-      /\  UNCHANGED << ack_commitments, relayed_packets >>
-
-ReceivePacket(chain_id, channel_id, packet) ==
-  /\  ChannelIsOpen(chain_id, channel_id)
-  /\  HasChannel(chain_id, channel_id)
-  /\  LET
-        channel_state == all_channel_states[chain_id, channel_id]
-        counterparty_chain_id == channel_state.counterparty_chain_id
-        counterparty_channel_id == channel_state.counterparty_channel_id
-        packet_key == PacketKey(chain_id, channel_id, packet)
-        counterparty_packet_key == PacketKey(counterparty_chain_id, counterparty_channel_id, packet)
-      IN
-      /\  counterparty_packet_key \in send_commitments
-      /\  ~(packet_key \in ack_commitments)
-      /\  ack_commitments' = { packet_key } \union ack_commitments
-      /\  UNCHANGED << send_commitments, relayed_packets >>
-      /\  ChannelStatesUnchanged
-
-SendAnyPacket(send_packet(_, _, _)) ==
-  \* Choose a channel in Open state, regardless of the counterparty state
-  \E channel_entry \in DOMAIN all_channel_states:
-    /\  all_channel_states[channel_entry].handshake_state = ChanOpenState
-    /\  \E packet \in BaseSendPayloads:
-          send_packet(channel_entry[1], channel_entry[2], packet)
-
-ReceiveAnyPacket(receive_packet(_, _, _)) ==
-  \E packet_key \in send_commitments:
-  LET
-    chain_id == packet_key[1]
-    channel_id == packet_key[2]
-    packet == packet_key[3]
-    channel_state == all_channel_states[chain_id, channel_id]
-  IN
-  receive_packet(
-    channel_state.counterparty_chain_id,
-    channel_state.counterparty_channel_id,
-    packet
-  )
-
-NextPacketAction ==
-  \/  SendAnyPacket(SendPacket)
-  \/  ReceiveAnyPacket(ReceivePacket)
-
-Next ==
-  \/  NextChannelAction
-  \/  NextPacketAction
-
 Unchanged ==
   /\  ChannelStatesUnchanged
-  /\  PacketStatesUnchanged
 
 =====

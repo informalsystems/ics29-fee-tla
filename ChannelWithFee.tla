@@ -101,21 +101,13 @@ OnChanOpenAck(chain_id, channel_id, counterparty_channel_id, versions) ==
       versions
     )
 
-NextChannelAction ==
+Next ==
   /\  UNCHANGED << fees_supported_table >>
   /\  \/  BaseChannel!AnyChanOpenInit(OnChanOpenInit)
       \/  BaseChannel!AnyChanOpenTry(OnChanOpenTry)
       \/  /\  UNCHANGED << fees_enabled_table >>
           /\  \/  BaseChannel!AnyChanOpenAck(OnChanOpenAck)
               \/  BaseChannel!AnyChanOpenConfirm(BaseChannel!OnChanOpenConfirm)
-
-NextPacketAction ==
-  /\  UNCHANGED << fees_supported_table, fees_enabled_table >>
-  /\  BaseChannel!NextPacketAction
-
-Next ==
-  \/  NextChannelAction
-  \/  NextPacketAction
 
 \* Next ==
 \*   /\  UNCHANGED << fees_supported_table, fees_enabled_table >>

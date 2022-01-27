@@ -8,15 +8,19 @@ LOCAL Utils == INSTANCE Utils
 
 LOCAL Channel == INSTANCE ChannelWithFee
 
+LOCAL Packet == INSTANCE BasePacket
+
 LOCAL Bank == INSTANCE Bank
 
 Init ==
-  /\ Bank!Init
-  /\ Channel!Init
+  /\  Bank!Init
+  /\  Channel!Init
+  /\  Packet!Init
 
 Next ==
   \/  /\  Channel!Next
       /\  Bank!Unchanged
+      /\  Packet!Unchanged
 
 Invariant ==
   /\  Bank!Invariant
