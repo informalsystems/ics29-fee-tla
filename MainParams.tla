@@ -54,14 +54,18 @@ InitialBalancePerUser == 1000
 
 AllChannelIds == InitChannelIds \union OpenTryChannelIds
 
-AllPacketIds ==
-  { "packet-1"
-  , "packet-2"
-  , "packet-3"
+AllSequences ==
+  { "sequence-1"
+  , "sequence-2"
+  , "sequence-3"
   }
 
-BaseSendPayloads ==
+BasePayloads ==
   { "token-transfer"
+  }
+
+BaseAcks ==
+  { "ack-ok"
   }
 
 ====

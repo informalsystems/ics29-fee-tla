@@ -1,9 +1,10 @@
 ----- MODULE BasePacketParams -----
 
 CONSTANTS
-    AllPacketIds
-  , AllUsers
-  , BaseSendPayloads
+    AllUsers
+  , AllSequences
+  , BasePayloads
+  , BaseAcks
 
 VARIABLES
     send_commitments

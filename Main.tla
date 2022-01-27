@@ -21,6 +21,9 @@ Next ==
   \/  /\  Channel!Next
       /\  Bank!Unchanged
       /\  Packet!Unchanged
+  \/  /\  Packet!Next
+      /\  Channel!Unchanged
+      /\  Bank!Unchanged
 
 Invariant ==
   /\  Bank!Invariant
@@ -37,8 +40,8 @@ FindConnectChannelsWithFeeEnabled ==
     /\  Channel!FeesEnabled(chain_a, channel_id_a)
     /\  Channel!FeesEnabled(chain_b, channel_id_b)
     /\  Channel!ChannelsConnected(chain_a, channel_id_a, chain_b, channel_id_b)
-    \* /\  \E packet \in BaseSendPayloads:
-    \*         << chain_a, channel_id_a, packet >> \in relayed_packets
+    \* /\  \E packet \in DOMAIN send_commitments: TRUE
+    /\  \E ack \in DOMAIN ack_commitments: TRUE
 
 WantedState ==
   FindConnectChannelsWithFeeEnabled

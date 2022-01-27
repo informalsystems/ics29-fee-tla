@@ -10,11 +10,14 @@ LOCAL Utils == INSTANCE Utils
 
 AllChannelIds == InitChannelIds \union OpenTryChannelIds
 
+ChannelState(chain_id, channel_id) ==
+  all_channel_states[chain_id, channel_id]
+
 HandshakeState(chain_id, channel_id) ==
-  all_channel_states[chain_id, channel_id].handshake_state
+  ChannelState(chain_id, channel_id).handshake_state
 
 CounterpartyChainId(chain_id, channel_id) ==
-  all_channel_states[chain_id, channel_id].counterparty_chain_id
+  ChannelState(chain_id, channel_id).counterparty_chain_id
 
 HasChannel(chain_id, channel_id) ==
   Utils!HasKey(all_channel_states, << chain_id, channel_id >>)
@@ -73,7 +76,7 @@ OnChanOpenTry(chain_id, counterparty_chain_id, channel_id, counterparty_channel_
   /\  ValidVersions(versions)
   /\  ~HasChannel(chain_id, channel_id)
   /\  HasChannel(counterparty_chain_id, counterparty_channel_id)
-  /\  all_channel_states[counterparty_chain_id, counterparty_channel_id].handshake_state = ChanInitState
+  /\  ChannelState(counterparty_chain_id, counterparty_channel_id).handshake_state = ChanInitState
   /\  UNCHANGED connected_channels
   /\  LET
         channel_state == [
@@ -95,9 +98,9 @@ OnChanOpenTry(chain_id, counterparty_chain_id, channel_id, counterparty_channel_
 
 OnChanOpenAck(chain_id, channel_id, counterparty_channel_id, versions) ==
   LET
-    channel_state == all_channel_states[chain_id, channel_id]
+    channel_state == ChannelState(chain_id, channel_id)
     counterparty_chain_id == channel_state.counterparty_chain_id
-    counterparty_channel_state == all_channel_states[counterparty_chain_id, counterparty_channel_id]
+    counterparty_channel_state == ChannelState(counterparty_chain_id, counterparty_channel_id)
   IN
     /\  ValidVersions(versions)
     /\  channel_state.handshake_state = ChanInitState
@@ -122,10 +125,10 @@ OnChanOpenAck(chain_id, channel_id, counterparty_channel_id, versions) ==
 
 OnChanOpenConfirm(chain_id, channel_id) ==
   LET
-    channel_state == all_channel_states[chain_id, channel_id]
+    channel_state == ChannelState(chain_id, channel_id)
     counterparty_chain_id == channel_state.counterparty_chain_id
     counterparty_channel_id == channel_state.counterparty_channel_id
-    counterparty_channel_state == all_channel_states[counterparty_chain_id, counterparty_channel_id]
+    counterparty_channel_state == ChannelState(counterparty_chain_id, counterparty_channel_id)
   IN
     /\  channel_state.handshake_state = ChanTryOpenState
     /\  counterparty_channel_state.handshake_state = ChanOpenState
@@ -171,7 +174,7 @@ AnyChanOpenTry(on_chan_open_try(_, _, _, _, _, _)) ==
             chain_id,
             counterparty_channel_id,
             channel_id,
-            all_channel_states[chain_id, channel_id].versions,
+            ChannelState(chain_id, channel_id).versions,
             << >>
           )
 
@@ -181,7 +184,7 @@ AnyChanOpenAck(on_chan_open_ack(_, _, _, _)) ==
     /\  HasChannel(chain_id, channel_id)
     /\  HandshakeState(chain_id, channel_id) = ChanTryOpenState
     /\  LET
-          channel_state == all_channel_states[chain_id, channel_id]
+          channel_state == ChannelState(chain_id, channel_id)
         IN
           on_chan_open_ack(
             channel_state.counterparty_chain_id,
@@ -196,12 +199,12 @@ AnyChanOpenConfirm(on_chan_open_confirm(_, _)) ==
     /\  HasChannel(chain_id, channel_id)
     /\  HandshakeState(chain_id, channel_id) = ChanOpenState
     /\  LET
-          channel_state == all_channel_states[chain_id, channel_id]
+          channel_state == ChannelState(chain_id, channel_id)
           counterparty_chain_id == channel_state.counterparty_chain_id
           counterparty_channel_id == channel_state.counterparty_channel_id
         IN
         /\  HasChannel(counterparty_chain_id, counterparty_channel_id)
-        /\  all_channel_states[counterparty_chain_id, counterparty_channel_id].handshake_state = ChanTryOpenState
+        /\  ChannelState(counterparty_chain_id, counterparty_channel_id).handshake_state = ChanTryOpenState
         /\  on_chan_open_confirm(
               counterparty_chain_id,
               counterparty_channel_id
