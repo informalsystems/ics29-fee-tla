@@ -36,9 +36,9 @@ ChannelIsOpen(chain_id, channel_id) ==
 Init ==
   /\  all_channel_states = Utils!EmptyRecord
   /\  connected_channels = {}
-  /\  sent_packets = {}
-  /\  received_packets = {}
-  /\  acked_packets = {}
+  /\  send_commitments = {}
+  /\  ack_commitments = {}
+  /\  relayed_packets = Utils!EmptyRecord
 
 ValidVersions(versions) ==
   /\  Len(versions) = 1
@@ -50,9 +50,9 @@ ChannelStatesUnchanged == UNCHANGED <<
 >>
 
 PacketStatesUnchanged == UNCHANGED <<
-    sent_packets
-  , received_packets
-  , acked_packets
+    send_commitments
+  , ack_commitments
+  , relayed_packets
 >>
 
 OnChanOpenInit(chain_id, counterparty_chain_id, channel_id, versions_acc) ==
@@ -226,8 +226,8 @@ NextChannelAction ==
   \/  AnyChanOpenAck(OnChanOpenAck)
   \/  AnyChanOpenConfirm(OnChanOpenConfirm)
 
-PacketKey(chain_id, channel_id, packet) ==
-  << chain_id, channel_id, packet >>
+PacketKey(chain_id, channel_id, packet_id) ==
+  << chain_id, channel_id, packet_id >>
 
 SendPacket(chain_id, channel_id, packet) ==
       \* It is enough to being able to send packet when only one end
@@ -240,9 +240,9 @@ SendPacket(chain_id, channel_id, packet) ==
       \* there is no effect on the update. However having the predicate
       \* false will back track the whole state transition when using
       \* SendPacket together with other atomic steps in fees middleware
-      /\  ~(PacketKey(chain_id, channel_id, packet) \in sent_packets)
-      /\  sent_packets' = { packet_key } \union sent_packets
-      /\  UNCHANGED << received_packets, acked_packets >>
+      /\  ~(PacketKey(chain_id, channel_id, packet) \in send_commitments)
+      /\  send_commitments' = { packet_key } \union send_commitments
+      /\  UNCHANGED << ack_commitments, relayed_packets >>
 
 ReceivePacket(chain_id, channel_id, packet) ==
   /\  ChannelIsOpen(chain_id, channel_id)
@@ -254,21 +254,21 @@ ReceivePacket(chain_id, channel_id, packet) ==
         packet_key == PacketKey(chain_id, channel_id, packet)
         counterparty_packet_key == PacketKey(counterparty_chain_id, counterparty_channel_id, packet)
       IN
-      /\  counterparty_packet_key \in sent_packets
-      /\  ~(packet_key \in received_packets)
-      /\  received_packets' = { packet_key } \union received_packets
-      /\  UNCHANGED << sent_packets, acked_packets >>
+      /\  counterparty_packet_key \in send_commitments
+      /\  ~(packet_key \in ack_commitments)
+      /\  ack_commitments' = { packet_key } \union ack_commitments
+      /\  UNCHANGED << send_commitments, relayed_packets >>
       /\  ChannelStatesUnchanged
 
 SendAnyPacket(send_packet(_, _, _)) ==
   \* Choose a channel in Open state, regardless of the counterparty state
   \E channel_entry \in DOMAIN all_channel_states:
     /\  all_channel_states[channel_entry].handshake_state = ChanOpenState
-    /\  \E packet \in AllPackets:
+    /\  \E packet \in BaseSendPayloads:
           send_packet(channel_entry[1], channel_entry[2], packet)
 
 ReceiveAnyPacket(receive_packet(_, _, _)) ==
-  \E packet_key \in sent_packets:
+  \E packet_key \in send_commitments:
   LET
     chain_id == packet_key[1]
     channel_id == packet_key[2]

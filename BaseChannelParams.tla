@@ -9,17 +9,15 @@ CONSTANTS
   , ChanOpenState
   , ChanTryOpenState
   , BaseVersions
-  , AllPackets
+  , AllPacketIds
   , AllUsers
-
-  \*  All acknowledgements that can be returned by the base IBC module
-  , BaseAcks
+  , BaseSendPayloads
 
 VARIABLES
     all_channel_states
   , connected_channels
-  , sent_packets
-  , received_packets
-  , acked_packets
+  , send_commitments
+  , ack_commitments
+  , relayed_packets
 
 =====

@@ -6,42 +6,42 @@ VARIABLES
   , fees_supported_table
   , fees_enabled_table
   , connected_channels
-  , sent_packets
-  , received_packets
-  , acked_packets
+  , send_commitments
+  , ack_commitments
+  , relayed_packets
 
 Null == "NULL"
 
-AllChainIds == {
-    "chain-a"
+AllChainIds ==
+  { "chain-a"
   , "chain-b"
-\*   , "chain-c"
-}
+  \* , "chain-c"
+  }
 
-AllUsers == {
-  "user-1",
-  "user-2",
-  "relayer-1",
-  "relayer-2"
-}
+AllUsers ==
+  { "user-1"
+  , "user-2"
+  , "relayer-1"
+  , "relayer-2"
+  }
 
-AllModules == {
-  "fee-middleware"
-}
+AllModules ==
+  { "fee-middleware"
+  }
 
-InitChannelIds == {
-    "channel-1"
+InitChannelIds ==
+  { "channel-1"
   , "channel-2"
   \* , "channel-3"
   \* , "channel-4"
 }
 
-OpenTryChannelIds == {
-    "channel-9"
+OpenTryChannelIds ==
+  { "channel-9"
   , "channel-8"
   \* , "channel-7"
   \* , "channel-6"
-}
+  }
 
 ChanInitState == "Init"
 ChanOpenState == "Open"
@@ -54,14 +54,14 @@ InitialBalancePerUser == 1000
 
 AllChannelIds == InitChannelIds \union OpenTryChannelIds
 
-AllPackets == {
-    "packet-1"
+AllPacketIds ==
+  { "packet-1"
   , "packet-2"
   , "packet-3"
-}
+  }
 
-BaseAcks == {
-  "ack"
-}
+BaseSendPayloads ==
+  { "token-transfer"
+  }
 
 ====

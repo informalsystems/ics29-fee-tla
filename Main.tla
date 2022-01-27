@@ -33,8 +33,8 @@ FindConnectChannelsWithFeeEnabled ==
     /\  Channel!FeesEnabled(chain_a, channel_id_a)
     /\  Channel!FeesEnabled(chain_b, channel_id_b)
     /\  Channel!ChannelsConnected(chain_a, channel_id_a, chain_b, channel_id_b)
-    /\  \E packet \in AllPackets:
-            << chain_a, channel_id_a, packet >> \in received_packets
+    \* /\  \E packet \in BaseSendPayloads:
+    \*         << chain_a, channel_id_a, packet >> \in relayed_packets
 
 WantedState ==
   FindConnectChannelsWithFeeEnabled
