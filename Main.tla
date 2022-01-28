@@ -41,7 +41,8 @@ FindConnectChannelsWithFeeEnabled ==
     /\  Channel!FeesEnabled(chain_b, channel_id_b)
     /\  Channel!ChannelsConnected(chain_a, channel_id_a, chain_b, channel_id_b)
     \* /\  \E packet \in DOMAIN send_commitments: TRUE
-    /\  \E ack \in DOMAIN ack_commitments: TRUE
+    \* /\  \E ack \in DOMAIN ack_commitments: TRUE
+    /\  \E packet \in committed_packets: TRUE
 
 WantedState ==
   FindConnectChannelsWithFeeEnabled

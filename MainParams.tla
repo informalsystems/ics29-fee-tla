@@ -8,7 +8,7 @@ VARIABLES
   , connected_channels
   , send_commitments
   , ack_commitments
-  , relayed_packets
+  , committed_packets
 
 Null == "NULL"
 
