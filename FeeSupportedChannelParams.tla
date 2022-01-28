@@ -1,4 +1,4 @@
----- MODULE ChannelWithFeeParams -----
+---- MODULE FeeSupportedChannelParams -----
 
 EXTENDS
     BaseChannelParams

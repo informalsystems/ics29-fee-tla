@@ -1,5 +1,7 @@
 ----- MODULE BasePacketParams -----
 
+EXTENDS BaseChannelParams
+
 CONSTANTS
     AllUsers
   , AllSequences

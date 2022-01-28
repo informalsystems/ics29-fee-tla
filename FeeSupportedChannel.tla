@@ -1,8 +1,8 @@
----- MODULE ChannelWithFee -----
+---- MODULE FeeSupportedChannel -----
 
 EXTENDS
     Sequences
-  , ChannelWithFeeParams
+  , FeeSupportedChannelParams
 
 LOCAL Utils == INSTANCE Utils
 LOCAL BaseChannel == INSTANCE BaseChannel

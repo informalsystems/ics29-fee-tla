@@ -4,7 +4,6 @@ EXTENDS
     Naturals
   , Sequences
   , FiniteSets
-  , BaseChannelParams
   , BasePacketParams
 
 LOCAL Utils == INSTANCE Utils

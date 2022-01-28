@@ -9,6 +9,7 @@ VARIABLES
   , send_commitments
   , ack_commitments
   , committed_packets
+  , fee_escrows
 
 Null == "NULL"
 
@@ -18,6 +19,16 @@ AllChainIds ==
   \* , "chain-c"
   }
 
+RegularUsers ==
+  { "user-1"
+  , "user-2"
+  }
+
+Relayers ==
+  { "relayer-1"
+  , "relayer-2"
+  }
+
 AllUsers ==
   { "user-1"
   , "user-2"
@@ -25,20 +36,23 @@ AllUsers ==
   , "relayer-2"
   }
 
+FeeModuleAccount ==
+  "fee-middleware"
+
 AllModules ==
-  { "fee-middleware"
+  { FeeModuleAccount
   }
 
 InitChannelIds ==
   { "channel-1"
-  , "channel-2"
+  \* , "channel-2"
   \* , "channel-3"
   \* , "channel-4"
 }
 
 OpenTryChannelIds ==
   { "channel-9"
-  , "channel-8"
+  \* , "channel-8"
   \* , "channel-7"
   \* , "channel-6"
   }
@@ -66,6 +80,10 @@ BasePayloads ==
 
 BaseAcks ==
   { "ack-ok"
+  }
+
+AllFees ==
+  { 10
   }
 
 ====
