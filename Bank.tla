@@ -3,8 +3,9 @@
 EXTENDS
     Naturals
   , TLC
-  , Functions
+  \* , Functions
   , FiniteSets
+  , SequencesExt
   , BankParams
 
 LOCAL Utils == INSTANCE Utils
@@ -21,11 +22,16 @@ LOCAL InitialBankBalances ==
 
 LOCAL TotalSupply == Cardinality(AllUsers) * InitialBalancePerUser
 
-LOCAL TotalBalanceOnChain(chain_balances) ==
-  FoldFunction(
-    +,
-    0,
-    chain_balances
+LOCAL TotalBalanceOnChain(chain_balances, chain_id) ==
+  FoldLeft(
+    LAMBDA total, account:
+      IF account[1] = chain_id
+      THEN
+        total + chain_balances[account]
+      ELSE
+        total
+  , 0
+  , SetToSeq(DOMAIN chain_balances)
   )
 
 Init ==
@@ -33,22 +39,18 @@ Init ==
 
 Unchanged == UNCHANGED bank_balances
 
-\* ChainInvariant(chain_balances) ==
-\*   /\  TotalBalanceOnChain(chain_balances) = TotalSupply
-\*   /\  \A account \in DOMAIN chain_balances:
-\*       chain_balances[account] >= 0
-
 Invariant ==
-  /\  TRUE
-  \* /\  \A chain_id \in AllChainIds:
-  \*     ChainInvariant(bank_balances[chain_id])
+  /\  \A chain_id \in AllChainIds:
+        TotalBalanceOnChain(bank_balances, chain_id) = TotalSupply
+  /\  \A account \in DOMAIN bank_balances:
+        bank_balances[account] >= 0
 
 Transfer(chain_id, sender_account, receiver_account, amount) ==
   LET
     sender_balance == bank_balances[chain_id, sender_account]
   IN
-  \* /\  amount > 0
-  \* /\  sender_balance >= amount
+  /\  amount > 0
+  /\  sender_balance >= amount
   /\  LET
         new_sender_balance == sender_balance - amount
         temp_balances == Utils!UpdateEntry(
@@ -67,6 +69,9 @@ Transfer(chain_id, sender_account, receiver_account, amount) ==
         << chain_id, receiver_account >>,
         new_receiver_balance
       )
+
+HasAccount(chain_id, account) ==
+  << chain_id, account >> \in bank_balances
 
 AccountBalance(chain_id, account) ==
   bank_balances[chain_id, account]

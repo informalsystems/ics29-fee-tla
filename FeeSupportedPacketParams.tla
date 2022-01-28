@@ -6,6 +6,7 @@ EXTENDS
 
 CONSTANTS
     Relayers
+  , RegularUsers
   , AllFees
   , AllModules
   , InitialBalancePerUser
@@ -13,6 +14,7 @@ CONSTANTS
 
 VARIABLES
     fee_escrows
+  , completed_escrows
   , bank_balances
 
 =====

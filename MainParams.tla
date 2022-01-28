@@ -10,6 +10,7 @@ VARIABLES
   , ack_commitments
   , committed_packets
   , fee_escrows
+  , completed_escrows
 
 Null == "NULL"
 
@@ -30,11 +31,7 @@ Relayers ==
   }
 
 AllUsers ==
-  { "user-1"
-  , "user-2"
-  , "relayer-1"
-  , "relayer-2"
-  }
+  RegularUsers \union Relayers
 
 FeeModuleAccount ==
   "fee-middleware"

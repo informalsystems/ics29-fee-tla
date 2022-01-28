@@ -118,7 +118,6 @@ ConfirmPacket(chain_id, channel_id, sequence, acks) ==
       /\  packet_key \in DOMAIN send_commitments
       /\  counterparty_packet_key \in DOMAIN ack_commitments
       /\  ~(packet_key \in committed_packets)
-      /\  ack_commitments[counterparty_packet_key] = acks
       /\  Len(acks) = 1
       /\  acks[1] \in BaseAcks
       /\  committed_packets' = committed_packets \union { packet_key }

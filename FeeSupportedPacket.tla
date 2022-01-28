@@ -2,6 +2,7 @@
 
 EXTENDS
     Naturals
+  , Sequences
   , FeeSupportedPacketParams
 
 LOCAL BasePacket == INSTANCE BasePacket
@@ -15,11 +16,12 @@ LOCAL Bank == INSTANCE Bank
 Init ==
   /\  BasePacket!Init
   /\  fee_escrows = Utils!EmptyRecord
+  /\  completed_escrows = {}
 
 Unchanged ==
   /\  BasePacket!Unchanged
   /\  Bank!Unchanged
-  /\  UNCHANGED << fee_escrows >>
+  /\  UNCHANGED << fee_escrows, completed_escrows >>
 
 PayPacketFee(
   chain_id
@@ -48,8 +50,9 @@ PayPacketFee(
       )
 
 SendPacket(chain_id, channel_id, sequence, payload) ==
+  /\  BasePacket!SendPacket(chain_id, channel_id, sequence, payload)
   /\  \/  /\  Channel!FeesEnabled(chain_id, channel_id)
-          /\  \E user \in AllUsers:
+          /\  \E user \in RegularUsers:
               \E receive_fee, ack_fee \in AllFees:
                 PayPacketFee(
                   chain_id
@@ -59,23 +62,75 @@ SendPacket(chain_id, channel_id, sequence, payload) ==
                 , receive_fee
                 , ack_fee
                 )
-      \/  /\  UNCHANGED << fee_escrows >>
+          /\  UNCHANGED << completed_escrows >>
+      \/  /\  UNCHANGED << fee_escrows, completed_escrows >>
           /\  Bank!Unchanged
-  /\  BasePacket!SendPacket(chain_id, channel_id, sequence, payload)
 
 ReceivePacket(packet, ack_acc) ==
-  /\  BasePacket!ReceivePacket(packet, ack_acc)
+  /\  IF  Channel!FeesEnabled(
+            packet.destination_chain_id
+          , packet.destination_channel_id
+          )
+      THEN
+        \E relayer \in Relayers:
+          LET
+            ack == Utils!Concat(
+              ack_acc, <<
+                [ forward_relayer |-> relayer ]
+              >>
+            )
+          IN
+          BasePacket!ReceivePacket(packet, ack)
+      ELSE
+          BasePacket!ReceivePacket(packet, ack_acc)
   /\  Bank!Unchanged
-  /\  UNCHANGED << fee_escrows >>
+  /\  UNCHANGED << fee_escrows, completed_escrows >>
 
 ConfirmPacket(chain_id, channel_id, sequence, acks) ==
-  /\  BasePacket!ConfirmPacket(chain_id, channel_id, sequence, acks)
-  /\  Bank!Unchanged
-  /\  UNCHANGED << fee_escrows >>
+  /\  IF  Channel!FeesEnabled(chain_id, channel_id)
+      THEN
+        /\  Len(acks) > 1
+        /\  BasePacket!ConfirmPacket(chain_id, channel_id, sequence, Tail(acks))
+        /\  LET
+              forward_relayer == acks[1].forward_relayer
+              escrow_key == << chain_id, channel_id, sequence >>
+            IN
+            IF escrow_key \in DOMAIN fee_escrows
+            THEN
+              LET
+                escrow == fee_escrows[escrow_key]
+              IN
+              /\  \E reverse_relayer \in Relayers:
+                    Bank!Transfer(
+                      chain_id
+                    , FeeModuleAccount
+                    , reverse_relayer
+                    , escrow.ack_fee
+                    )
+              /\  Bank!Transfer(
+                    chain_id
+                  , FeeModuleAccount
+                  , forward_relayer
+                  , escrow.receive_fee
+                  )
+              /\  completed_escrows' = completed_escrows \union { escrow_key }
+              /\  UNCHANGED << fee_escrows >>
+            ELSE
+              /\  Bank!Unchanged
+              /\  UNCHANGED << fee_escrows, completed_escrows >>
+      ELSE
+        /\  BasePacket!ConfirmPacket(chain_id, channel_id, sequence, acks)
+        /\  Bank!Unchanged
+        /\  UNCHANGED << fee_escrows, completed_escrows >>
 
 Next ==
   \/  BasePacket!SendAnyPacket(SendPacket)
   \/  BasePacket!ReceiveAnyPacket(ReceivePacket)
   \/  BasePacket!ConfirmAnyPacket(ConfirmPacket)
+
+\* Next ==
+\*   /\  BasePacket!Next
+\*   /\  Bank!Unchanged
+\*   /\  UNCHANGED << fee_escrows, completed_escrows >>
 
 =====

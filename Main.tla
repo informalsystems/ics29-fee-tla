@@ -47,13 +47,16 @@ FindConnectChannelsWithFeeEnabled ==
         /\  Channel!FeesEnabled(chain_a, channel_id_a)
         /\  Channel!FeesEnabled(chain_b, channel_id_b)
         /\  Channel!ChannelsConnected(chain_a, channel_id_a, chain_b, channel_id_b)
-  /\  \E packet \in DOMAIN send_commitments: TRUE
-  \* /\  \E ack \in DOMAIN ack_commitments: TRUE
-  \* /\  \E packet \in committed_packets: TRUE
-  /\  Cardinality(DOMAIN fee_escrows) > 0
+  /\  \A key \in DOMAIN fees_enabled_table:
+        fees_enabled_table[key] = TRUE
+  \* /\  \E packet \in DOMAIN send_commitments: TRUE
+  /\  Cardinality(DOMAIN ack_commitments) > 0
+  /\  Cardinality(committed_packets) > 0
+  \* /\  Cardinality(DOMAIN fee_escrows) > 0
+  \* /\  Cardinality(completed_escrows) > 0
   \* /\  \E chain_id \in AllChainIds:
-  \*     \E user \in AllUsers:
-  \*       Bank!AccountBalance(chain_id, user) < 980
+  \*     \E user \in RegularUsers:
+  \*       Bank!AccountBalance(chain_id, user) > 1000
 
 WantedState ==
   FindConnectChannelsWithFeeEnabled
