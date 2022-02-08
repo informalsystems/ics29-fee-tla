@@ -2,6 +2,7 @@
 
 VARIABLES
     bank_balances
+  , transfer_history
   , all_channel_states
   , fees_supported_table
   , fees_enabled_table
@@ -11,6 +12,7 @@ VARIABLES
   , committed_packets
   , fee_escrows
   , completed_escrows
+  , relay_history
 
 Null == "NULL"
 
@@ -32,6 +34,9 @@ Relayers ==
 
 AllUsers ==
   RegularUsers \union Relayers
+
+InvalidAddress ==
+  "invalid-address"
 
 FeeModuleAccount ==
   "fee-middleware"

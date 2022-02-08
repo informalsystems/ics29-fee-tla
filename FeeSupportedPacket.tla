@@ -17,11 +17,12 @@ Init ==
   /\  BasePacket!Init
   /\  fee_escrows = Utils!EmptyRecord
   /\  completed_escrows = {}
+  /\  relay_history = << >>
 
 Unchanged ==
   /\  BasePacket!Unchanged
   /\  Bank!Unchanged
-  /\  UNCHANGED << fee_escrows, completed_escrows >>
+  /\  UNCHANGED << fee_escrows, completed_escrows, relay_history >>
 
 PayPacketFee(
   chain_id
@@ -34,11 +35,13 @@ PayPacketFee(
   /\  receive_fee >= 0
   /\  ack_fee >= 0
   /\  ~(receive_fee = 0 /\ ack_fee = 0)
-  /\  Bank!Transfer(
-        chain_id
-      , user
-      , FeeModuleAccount
-      , receive_fee + ack_fee
+  /\  Bank!SingleTransfer(
+        Bank!CreateTransfer(
+          chain_id
+        , user
+        , FeeModuleAccount
+        , receive_fee + ack_fee
+        )
       )
   /\  fee_escrows' = Utils!AddEntry(
         fee_escrows,
@@ -62,8 +65,8 @@ SendPacket(chain_id, channel_id, sequence, payload) ==
                 , receive_fee
                 , ack_fee
                 )
-          /\  UNCHANGED << completed_escrows >>
-      \/  /\  UNCHANGED << fee_escrows, completed_escrows >>
+          /\  UNCHANGED << completed_escrows, relay_history >>
+      \/  /\  UNCHANGED << fee_escrows, completed_escrows, relay_history >>
           /\  Bank!Unchanged
 
 ReceivePacket(packet, ack_acc) ==
@@ -72,7 +75,7 @@ ReceivePacket(packet, ack_acc) ==
           , packet.destination_channel_id
           )
       THEN
-        \E relayer \in Relayers:
+        \E relayer \in Relayers \union { InvalidAddress }:
           LET
             ack == Utils!Concat(
               ack_acc, <<
@@ -80,9 +83,14 @@ ReceivePacket(packet, ack_acc) ==
               >>
             )
           IN
-          BasePacket!ReceivePacket(packet, ack)
+          /\  BasePacket!ReceivePacket(packet, ack)
+          /\  relay_history' = Utils!Concat(
+                relay_history
+              , << << "receive", relayer, packet.destination_chain_id, packet.destination_channel_id, packet.sequence >> >>
+              )
       ELSE
-          BasePacket!ReceivePacket(packet, ack_acc)
+          /\  BasePacket!ReceivePacket(packet, ack_acc)
+          /\  UNCHANGED << relay_history >>
   /\  Bank!Unchanged
   /\  UNCHANGED << fee_escrows, completed_escrows >>
 
@@ -99,29 +107,39 @@ ConfirmPacket(chain_id, channel_id, sequence, acks) ==
             THEN
               LET
                 escrow == fee_escrows[escrow_key]
+                receive_fee_address ==
+                  IF Bank!HasAccount(chain_id, forward_relayer)
+                  THEN forward_relayer
+                  ELSE escrow.refund_address
               IN
               /\  \E reverse_relayer \in Relayers:
-                    Bank!MultiTransfer(<<
-                      [ chain_id |-> chain_id
-                      , sender |-> FeeModuleAccount
-                      , receiver |-> reverse_relayer
-                      , amount |-> escrow.ack_fee
-                      ]
-                    , [ chain_id |-> chain_id
-                      , sender |-> FeeModuleAccount
-                      , receiver |-> forward_relayer
-                      , amount |-> escrow.receive_fee
-                      ]
-                    >> )
+                    /\  Bank!MultiTransfer( <<
+                          Bank!CreateTransfer(
+                            chain_id
+                          , FeeModuleAccount
+                          , reverse_relayer
+                          , escrow.ack_fee
+                          )
+                        , Bank!CreateTransfer(
+                            chain_id
+                          , FeeModuleAccount
+                          , receive_fee_address
+                          , escrow.receive_fee
+                          )
+                        >> )
+                    /\  relay_history' = Utils!Concat(
+                          relay_history
+                        , << << "ack", reverse_relayer, chain_id, channel_id, sequence >> >>
+                        )
               /\  completed_escrows' = completed_escrows \union { escrow_key }
               /\  UNCHANGED << fee_escrows >>
             ELSE
               /\  Bank!Unchanged
-              /\  UNCHANGED << fee_escrows, completed_escrows >>
+              /\  UNCHANGED << fee_escrows, completed_escrows, relay_history >>
       ELSE
         /\  BasePacket!ConfirmPacket(chain_id, channel_id, sequence, acks)
         /\  Bank!Unchanged
-        /\  UNCHANGED << fee_escrows, completed_escrows >>
+        /\  UNCHANGED << fee_escrows, completed_escrows, relay_history >>
 
 Next ==
   \/  BasePacket!SendAnyPacket(SendPacket)

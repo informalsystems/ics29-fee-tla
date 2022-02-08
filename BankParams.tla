@@ -1,12 +1,13 @@
 ----- MODULE BankParams ----
 
 CONSTANTS
-  AllChainIds,
-  AllUsers,
-  AllModules,
-  InitialBalancePerUser
+    AllChainIds
+  , AllUsers
+  , AllModules
+  , InitialBalancePerUser
 
 VARIABLES
-  bank_balances
+    bank_balances
+  , transfer_history
 
 ====

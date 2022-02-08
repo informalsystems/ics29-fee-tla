@@ -36,9 +36,20 @@ Invariant ==
   /\  Bank!Invariant
   /\  Channel!Invariant
 
-\* Find a trace where there are a pair of connected channels
-\* with fees enabled
-FindConnectChannelsWithFeeEnabled ==
+FeeModulesHasZeroBalance ==
+  /\  \A chain_id \in AllChainIds:
+        Bank!AccountBalance(chain_id, FeeModuleAccount) = 0
+
+FeeModuleHasNegativeBalance ==
+  /\  \E chain_id \in AllChainIds:
+        Bank!AccountBalance(chain_id, FeeModuleAccount) < 0
+
+AllRelayersNotPaid ==
+  /\  \E chain_id \in AllChainIds:
+      \A relayer \in Relayers:
+        Bank!AccountBalance(chain_id, relayer) = 1000
+
+HasConnectedChannelWithFee ==
   /\  \E chain_a, chain_b \in AllChainIds:
       \E channel_id_a, channel_id_b \in AllChannelIds:
         /\  chain_a /= chain_b
@@ -47,16 +58,23 @@ FindConnectChannelsWithFeeEnabled ==
         /\  Channel!FeesEnabled(chain_a, channel_id_a)
         /\  Channel!FeesEnabled(chain_b, channel_id_b)
         /\  Channel!ChannelsConnected(chain_a, channel_id_a, chain_b, channel_id_b)
+
+FindConnectChannelsWithFeeEnabled ==
   /\  \A key \in DOMAIN fees_enabled_table:
         fees_enabled_table[key] = TRUE
   \* /\  \E packet \in DOMAIN send_commitments: TRUE
   /\  Cardinality(DOMAIN ack_commitments) > 0
   /\  Cardinality(committed_packets) > 0
   \* /\  Cardinality(DOMAIN fee_escrows) > 0
-  /\  Cardinality(completed_escrows) >= 4
+  /\  Cardinality(completed_escrows) > 0
+  /\  FeeModulesHasZeroBalance
+  /\  AllRelayersNotPaid
+\*   /\  FeeModuleHasNegativeBalance
+
   \* /\  \E chain_id \in AllChainIds:
   \*     \E user \in RegularUsers:
   \*       Bank!AccountBalance(chain_id, user) > 1000
+
 
 WantedState ==
   FindConnectChannelsWithFeeEnabled

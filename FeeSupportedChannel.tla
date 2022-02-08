@@ -13,6 +13,7 @@ Init ==
         fees_supported_table = table
   /\  fees_enabled_table = Utils!EmptyRecord
 
+
 Unchanged ==
   /\  BaseChannel!Unchanged
   /\  UNCHANGED <<
