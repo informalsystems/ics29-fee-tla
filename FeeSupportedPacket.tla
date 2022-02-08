@@ -101,18 +101,18 @@ ConfirmPacket(chain_id, channel_id, sequence, acks) ==
                 escrow == fee_escrows[escrow_key]
               IN
               /\  \E reverse_relayer \in Relayers:
-                    Bank!Transfer(
-                      chain_id
-                    , FeeModuleAccount
-                    , reverse_relayer
-                    , escrow.ack_fee
-                    )
-              /\  Bank!Transfer(
-                    chain_id
-                  , FeeModuleAccount
-                  , forward_relayer
-                  , escrow.receive_fee
-                  )
+                    Bank!MultiTransfer(<<
+                      [ chain_id |-> chain_id
+                      , sender |-> FeeModuleAccount
+                      , receiver |-> reverse_relayer
+                      , amount |-> escrow.ack_fee
+                      ]
+                    , [ chain_id |-> chain_id
+                      , sender |-> FeeModuleAccount
+                      , receiver |-> forward_relayer
+                      , amount |-> escrow.receive_fee
+                      ]
+                    >> )
               /\  completed_escrows' = completed_escrows \union { escrow_key }
               /\  UNCHANGED << fee_escrows >>
             ELSE

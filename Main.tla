@@ -53,7 +53,7 @@ FindConnectChannelsWithFeeEnabled ==
   /\  Cardinality(DOMAIN ack_commitments) > 0
   /\  Cardinality(committed_packets) > 0
   \* /\  Cardinality(DOMAIN fee_escrows) > 0
-  \* /\  Cardinality(completed_escrows) > 0
+  /\  Cardinality(completed_escrows) >= 4
   \* /\  \E chain_id \in AllChainIds:
   \*     \E user \in RegularUsers:
   \*       Bank!AccountBalance(chain_id, user) > 1000
