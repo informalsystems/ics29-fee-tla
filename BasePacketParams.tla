@@ -12,5 +12,7 @@ VARIABLES
     send_commitments
   , ack_commitments
   , committed_packets
+  , timed_out_packets
+  , committed_timed_out_packets
 
 =====

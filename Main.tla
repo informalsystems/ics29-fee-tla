@@ -65,10 +65,11 @@ FindConnectChannelsWithFeeEnabled ==
   \* /\  \E packet \in DOMAIN send_commitments: TRUE
   /\  Cardinality(DOMAIN ack_commitments) > 0
   /\  Cardinality(committed_packets) > 0
-  \* /\  Cardinality(DOMAIN fee_escrows) > 0
+  /\  Cardinality(committed_timed_out_packets) > 0
+  /\  Cardinality(DOMAIN fee_escrows) > 0
   /\  Cardinality(completed_escrows) > 0
   /\  FeeModulesHasZeroBalance
-  /\  AllRelayersNotPaid
+\*   /\  AllRelayersNotPaid
 \*   /\  FeeModuleHasNegativeBalance
 
   \* /\  \E chain_id \in AllChainIds:

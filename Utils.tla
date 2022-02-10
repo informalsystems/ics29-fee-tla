@@ -21,6 +21,9 @@ UpdateEntry2(record,
         ![key2] = value2
   ]
 
+DeleteEntry(record, key) ==
+  [ k \in DOMAIN record \ { key } |-> record[key] ]
+
 HasKey(record, key) ==
   key \in DOMAIN record
 

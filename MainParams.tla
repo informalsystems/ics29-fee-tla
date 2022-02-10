@@ -10,9 +10,11 @@ VARIABLES
   , send_commitments
   , ack_commitments
   , committed_packets
+  , timed_out_packets
   , fee_escrows
   , completed_escrows
   , relay_history
+  , committed_timed_out_packets
 
 Null == "NULL"
 
@@ -72,8 +74,8 @@ AllChannelIds == InitChannelIds \union OpenTryChannelIds
 
 AllSequences ==
   { "sequence-1"
-  , "sequence-2"
-  , "sequence-3"
+\*   , "sequence-2"
+\*   , "sequence-3"
   }
 
 BasePayloads ==
