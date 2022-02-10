@@ -20,18 +20,18 @@ Null == "NULL"
 
 AllChainIds ==
   { "chain-a"
-  , "chain-b"
+\*   , "chain-b"
   \* , "chain-c"
   }
 
 RegularUsers ==
   { "user-1"
-  , "user-2"
+\*   , "user-2"
   }
 
 Relayers ==
   { "relayer-1"
-  , "relayer-2"
+\*   , "relayer-2"
   }
 
 AllUsers ==
@@ -49,14 +49,14 @@ AllModules ==
 
 InitChannelIds ==
   { "channel-1"
-  \* , "channel-2"
+\*   , "channel-2"
   \* , "channel-3"
   \* , "channel-4"
 }
 
 OpenTryChannelIds ==
   { "channel-9"
-  \* , "channel-8"
+\*   , "channel-8"
   \* , "channel-7"
   \* , "channel-6"
   }
@@ -89,8 +89,8 @@ BaseAcks ==
 AllFees ==
   { 0
   , 10
-  , 20
-  , 30
+\*   , 20
+\*   , 30
   }
 
 ====

@@ -45,7 +45,7 @@ FeeModuleHasNegativeBalance ==
         Bank!AccountBalance(chain_id, FeeModuleAccount) < 0
 
 AllRelayersNotPaid ==
-  /\  \E chain_id \in AllChainIds:
+  /\  \A chain_id \in AllChainIds:
       \A relayer \in Relayers:
         Bank!AccountBalance(chain_id, relayer) = 1000
 
@@ -62,26 +62,24 @@ HasConnectedChannelWithFee ==
 FindConnectChannelsWithFeeEnabled ==
   /\  \A key \in DOMAIN fees_enabled_table:
         fees_enabled_table[key] = TRUE
-  \* /\  \E packet \in DOMAIN send_commitments: TRUE
   /\  Cardinality(DOMAIN ack_commitments) > 0
   /\  Cardinality(committed_packets) > 0
   /\  Cardinality(committed_timed_out_packets) > 0
   /\  Cardinality(DOMAIN fee_escrows) > 0
   /\  Cardinality(completed_escrows) > 0
   /\  FeeModulesHasZeroBalance
-\*   /\  AllRelayersNotPaid
+  /\  AllRelayersNotPaid
 \*   /\  FeeModuleHasNegativeBalance
 
   \* /\  \E chain_id \in AllChainIds:
   \*     \E user \in RegularUsers:
   \*       Bank!AccountBalance(chain_id, user) > 1000
 
-
 WantedState ==
   FindConnectChannelsWithFeeEnabled
 
 WantedStateInvariant ==
   /\  ~WantedState
-  \* TRUE
+\*   TRUE
 
 ======

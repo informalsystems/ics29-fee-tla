@@ -61,7 +61,7 @@ TransferInvariantStateless(balances, transfer) ==
   LET
     sender_balance == balances[transfer.chain_id, transfer.sender]
   IN
-  /\  transfer.amount > 0
+  /\  transfer.amount >= 0
   \* /\  sender_balance >= amount
 
 TransferStateless(balances, transfer) ==
