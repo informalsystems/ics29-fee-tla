@@ -1,13 +1,33 @@
 ----- MODULE BankParams ----
 
 CONSTANTS
-    AllChainIds
-  , AllUsers
-  , AllModules
-  , InitialBalancePerUser
+  \* @type: Set(CHAIN);
+  AllChainIds,
+
+  \* @type: Set(ADDRESS);
+  AllUsers,
+
+  \* @type: Set(ADDRESS);
+  AllModules,
+
+  \* @type: Int;
+  InitialBalancePerUser
+
+\* @typeAlias: TRANSFER = [
+\*    chain_id: CHAIN,
+\*    sender: ADDRESS,
+\*    receiver: ADDRESS,
+\*    amount: Int
+\* ];
+\* @typeAlias: BALANCE_KEY = << CHAIN, ADDRESS >>;
+\* @typeAlias: BANK_BALANCES = (BALANCE_KEY -> Int);
+Aliases == TRUE
 
 VARIABLES
-    bank_balances
-  , transfer_history
+  \* @type: BANK_BALANCES;
+  bank_balances,
+
+  \* @type: Seq(TRANSFER);
+  transfer_history
 
 ====

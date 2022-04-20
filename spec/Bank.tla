@@ -2,8 +2,8 @@
 
 EXTENDS
     Naturals
+  , Apalache
   , TLC
-  \* , Functions
   , FiniteSets
   , SequencesExt
   , BankParams
@@ -22,16 +22,25 @@ LOCAL InitialBankBalances ==
 
 LOCAL TotalSupply == Cardinality(AllUsers) * InitialBalancePerUser
 
+\* @type: (BANK_BALANCES, BALANCE_KEY) => Int;
+LOCAL account_balance(chain_balances, account) ==
+  chain_balances[account]
+
+\* @type: ((BALANCE_KEY -> Int), CHAIN) => Int;
 LOCAL TotalBalanceOnChain(chain_balances, chain_id) ==
-  FoldLeft(
-    LAMBDA total, account:
+  LET
+    \* @type: (Int, BALANCE_KEY) => Int;
+    balance_folder(total, account) ==
       IF account[1] = chain_id
       THEN
-        total + chain_balances[account]
+        total + account_balance(chain_balances, account)
       ELSE
         total
+  IN
+  ApaFoldSet(
+    balance_folder
   , 0
-  , SetToSeq(DOMAIN chain_balances)
+  , DOMAIN chain_balances
   )
 
 Init ==
@@ -57,13 +66,16 @@ CreateTransfer(chain_id, sender, receiver, amount) ==
       |-> amount
   ]
 
+\* @type: (BANK_BALANCES, TRANSFER) => Bool;
 TransferInvariantStateless(balances, transfer) ==
   LET
+    \* @type: Int;
     sender_balance == balances[transfer.chain_id, transfer.sender]
   IN
   /\  transfer.amount >= 0
   \* /\  sender_balance >= amount
 
+\* @type: (BANK_BALANCES, TRANSFER) => BANK_BALANCES;
 TransferStateless(balances, transfer) ==
   LET
     sender_balance == balances[transfer.chain_id, transfer.sender]
@@ -92,8 +104,9 @@ SingleTransfer(transfer) ==
   /\  bank_balances' = TransferStateless(bank_balances, transfer)
   /\  transfer_history' = Utils!Concat(transfer_history, << transfer >>)
 
+\* @type: Seq(TRANSFER) => Bool;
 MultiTransfer(transfers) ==
-  /\  FoldLeft(
+  /\  ApaFoldSeqLeft(
         LAMBDA invariant_satisfied, transfer:
           /\  invariant_satisfied
           /\  TransferInvariantStateless(
@@ -103,12 +116,8 @@ MultiTransfer(transfers) ==
       , TRUE
       , transfers
       )
-  /\  bank_balances' = FoldLeft(
-        LAMBDA balances, transfer:
-          TransferStateless(
-            balances
-          , transfer
-          )
+  /\  bank_balances' = ApaFoldSeqLeft(
+        TransferStateless
       , bank_balances
       , transfers
       )
