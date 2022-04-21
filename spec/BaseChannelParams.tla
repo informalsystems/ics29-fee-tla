@@ -1,17 +1,37 @@
 ----- MODULE BaseChannelParams -----
 
+EXTENDS Types
+
 CONSTANTS
-    Null
-  , AllChainIds
-  , InitChannelIds
-  , OpenTryChannelIds
-  , ChanInitState
-  , ChanOpenState
-  , ChanTryOpenState
-  , BaseVersions
+  \* @type: NULL;
+  Null,
+
+  \* @type: Set(CHAIN_ID);
+  AllChainIds,
+
+  \* @type: Set(CHANNEL_ID);
+  InitChannelIds,
+
+  \* @type: Set(CHANNEL_ID);
+  OpenTryChannelIds,
+
+  \* @type: Str;
+  ChanInitState,
+
+  \* @type: Str;
+  ChanOpenState,
+
+  \* @type: Str;
+  ChanTryOpenState,
+
+  \* @type: Set(Str);
+  BaseVersions
 
 VARIABLES
-    all_channel_states
-  , connected_channels
+  \* @type: << CHAIN_ID, CHANNEL_ID >> -> CHANNEL_STATE;
+  all_channel_states,
+
+  \* @type: Set(Set(<< CHAIN_ID, CHANNEL_ID >>));
+  connected_channels
 
 =====

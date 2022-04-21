@@ -6,13 +6,15 @@ EXTENDS
   , FiniteSets
   , BaseChannelParams
 
-LOCAL Utils == INSTANCE Utils
+Utils == INSTANCE Utils
 
 AllChannelIds == InitChannelIds \union OpenTryChannelIds
 
+\* @type: (CHAIN_ID, CHANNEL_ID) => CHANNEL_STATE;
 ChannelState(chain_id, channel_id) ==
   all_channel_states[chain_id, channel_id]
 
+\* @type: (CHAIN_ID, CHANNEL_ID) => Str;
 HandshakeState(chain_id, channel_id) ==
   ChannelState(chain_id, channel_id).handshake_state
 
@@ -37,7 +39,16 @@ ChannelIsOpen(chain_id, channel_id) ==
   /\  HandshakeState(chain_id, channel_id) = ChanOpenState
 
 Init ==
-  /\  all_channel_states = Utils!EmptyRecord
+  /\  all_channel_states = Utils!EmptyRecord([
+        handshake_state
+          |-> "",
+        counterparty_chain_id
+          |-> "",
+        counterparty_channel_id
+          |-> "",
+        versions
+          |-> <<>>
+      ])
   /\  connected_channels = {}
 
 ValidVersions(versions) ==
@@ -49,7 +60,13 @@ ChannelStatesUnchanged == UNCHANGED <<
   , connected_channels
 >>
 
-OnChanOpenInit(chain_id, counterparty_chain_id, channel_id, versions_acc) ==
+\* @type: (CHAIN_ID, CHAIN_ID, CHANNEL_ID, Seq(Str)) => Bool;
+OnChanOpenInit(
+  chain_id,
+  counterparty_chain_id,
+  channel_id,
+  versions_acc
+) ==
     /\  ~HasChannel(chain_id, channel_id)
     /\  UNCHANGED << connected_channels >>
     /\  \E version \in BaseVersions:
@@ -60,7 +77,7 @@ OnChanOpenInit(chain_id, counterparty_chain_id, channel_id, versions_acc) ==
             counterparty_chain_id
               |-> counterparty_chain_id,
             counterparty_channel_id
-              |-> Null,
+              |-> "",
             versions
               |-> Utils!Concat(versions_acc, << version >>)
           ]
@@ -96,6 +113,7 @@ OnChanOpenTry(chain_id, counterparty_chain_id, channel_id, counterparty_channel_
           channel_state
         )
 
+\* @type: (CHAIN_ID, CHANNEL_ID, CHANNEL_ID, Seq(Str)) => Bool;
 OnChanOpenAck(chain_id, channel_id, counterparty_channel_id, versions) ==
   LET
     channel_state == ChannelState(chain_id, channel_id)
@@ -109,13 +127,11 @@ OnChanOpenAck(chain_id, channel_id, counterparty_channel_id, versions) ==
     /\  counterparty_channel_state.counterparty_channel_id = channel_id
     /\  UNCHANGED connected_channels
     /\  LET
-          new_channel_state == Utils!UpdateEntry2(
-            channel_state,
-            "handshake_state",
-            ChanOpenState,
-            "counterparty_channel_id",
-            counterparty_channel_id
-          )
+          new_channel_state == [
+            channel_state EXCEPT
+            !["handshake_state"] = ChanOpenState,
+            !["counterparty_channel_id"] = counterparty_channel_id
+          ]
         IN
           all_channel_states' = Utils!UpdateEntry(
             all_channel_states,
@@ -135,11 +151,10 @@ OnChanOpenConfirm(chain_id, channel_id) ==
     /\  counterparty_channel_state.counterparty_chain_id = chain_id
     /\  counterparty_channel_state.counterparty_channel_id = channel_id
     /\  LET
-          new_channel_state == Utils!UpdateEntry(
-            channel_state,
-            "handshake_state",
-            ChanOpenState
-          )
+          new_channel_state == [
+            channel_state EXCEPT
+            !["handshake_state"] = ChanOpenState
+          ]
         IN
         /\  all_channel_states' = Utils!UpdateEntry(
               all_channel_states,
