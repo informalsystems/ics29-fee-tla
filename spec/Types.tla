@@ -28,6 +28,19 @@
 \*    sequence: Str,
 \*    payload: Str
 \* ];
+\* @typeAlias: ESCROW = [
+\*    receive_fee: Int,
+\*    ack_fee: Int,
+\*    timeout_fee: Int,
+\*    refund_address: ADDRESS
+\* ];
+\* @typeAlias: RELAY = [
+\*    event: Str,
+\*    relayer: ADDRESS,
+\*    chain_id: CHAIN_ID,
+\*    channel_id: CHANNEL_ID,
+\*    sequence: Str
+\* ];
 \* @typeAlias: BALANCE_KEY = << CHAIN_ID, ADDRESS >>;
 \* @typeAlias: BANK_BALANCES = (BALANCE_KEY -> Int);
 Aliases == TRUE

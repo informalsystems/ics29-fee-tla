@@ -3,9 +3,6 @@
 EXTENDS Types
 
 CONSTANTS
-  \* @type: NULL;
-  Null,
-
   \* @type: Set(CHAIN_ID);
   AllChainIds,
 

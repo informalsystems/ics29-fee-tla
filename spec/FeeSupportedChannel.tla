@@ -4,15 +4,14 @@ EXTENDS
     Sequences
   , FeeSupportedChannelParams
 
-LOCAL Utils == INSTANCE Utils
-LOCAL BaseChannel == INSTANCE BaseChannel
+Utils == INSTANCE Utils
+BaseChannel == INSTANCE BaseChannel
 
 Init ==
   /\  BaseChannel!Init
   /\  \E table \in [ AllChainIds -> BOOLEAN ]:
         fees_supported_table = table
-  /\  fees_enabled_table = Utils!EmptyRecord
-
+  /\  fees_enabled_table = Utils!EmptyRecord(TRUE)
 
 Unchanged ==
   /\  BaseChannel!Unchanged

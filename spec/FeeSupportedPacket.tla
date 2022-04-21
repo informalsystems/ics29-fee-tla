@@ -5,17 +5,22 @@ EXTENDS
   , Sequences
   , FeeSupportedPacketParams
 
-LOCAL BasePacket == INSTANCE BasePacket
+BasePacket == INSTANCE BasePacket
 
-LOCAL Channel == INSTANCE FeeSupportedChannel
+Channel == INSTANCE FeeSupportedChannel
 
-LOCAL Utils == INSTANCE Utils
+Utils == INSTANCE Utils
 
-LOCAL Bank == INSTANCE Bank
+Bank == INSTANCE Bank
 
 Init ==
   /\  BasePacket!Init
-  /\  fee_escrows = Utils!EmptyRecord
+  /\  fee_escrows = Utils!EmptyRecord([
+        receive_fee |-> 0,
+        ack_fee |-> 0,
+        timeout_fee |-> 0,
+        refund_address |-> ""
+      ])
   /\  completed_escrows = {}
   /\  relay_history = << >>
 
@@ -88,7 +93,7 @@ ReceivePacket(packet, ack_acc) ==
           LET
             ack == Utils!Concat(
               ack_acc, <<
-                [ forward_relayer |-> relayer ]
+                relayer
               >>
             )
           IN
@@ -121,7 +126,8 @@ ConfirmPacket(chain_id, channel_id, sequence, acks) ==
         /\  Len(acks) > 1
         /\  BasePacket!ConfirmPacket(chain_id, channel_id, sequence, Tail(acks))
         /\  LET
-              forward_relayer == acks[1].forward_relayer
+              forward_relayer == acks[1]
+              \* @type: PACKET_KEY;
               escrow_key == << chain_id, channel_id, sequence >>
             IN
             IF escrow_key \in DOMAIN fee_escrows
@@ -186,9 +192,9 @@ TimeoutPacket(packet) ==
 ConfirmTimeoutPacket(chain_id, channel_id, sequence) ==
   /\  BasePacket!ConfirmTimeoutPacket(chain_id, channel_id, sequence)
   /\
-
       \E timeout_relayer \in Relayers:
         LET
+          \* @type: PACKET_KEY;
           escrow_key == << chain_id, channel_id, sequence >>
         IN
           /\  IF escrow_key \in DOMAIN fee_escrows
