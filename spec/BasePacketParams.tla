@@ -1,18 +1,34 @@
 ----- MODULE BasePacketParams -----
 
-EXTENDS BaseChannelParams
+EXTENDS BaseChannelParams, Types
 
 CONSTANTS
-    AllUsers
-  , AllSequences
-  , BasePayloads
-  , BaseAcks
+  \* @type: Set(ADDRESS);
+  AllUsers,
+
+  \* @type: Set(Str);
+  AllSequences,
+
+  \* @type: Set(Str);
+  BasePayloads,
+
+  \* @type: Set(Str);
+  BaseAcks
 
 VARIABLES
-    send_commitments
-  , ack_commitments
-  , committed_packets
-  , timed_out_packets
-  , committed_timed_out_packets
+  \* @type: PACKET_KEY -> PACKET;
+  send_commitments,
+
+  \* @type: PACKET_KEY -> Seq(Str);
+  ack_commitments,
+
+  \* @type: Set(PACKET_KEY);
+  committed_packets,
+
+  \* @type: Set(PACKET_KEY);
+  timed_out_packets,
+
+  \* @type: Set(PACKET_KEY);
+  committed_timed_out_packets
 
 =====

@@ -6,9 +6,9 @@ EXTENDS
   , FiniteSets
   , BasePacketParams
 
-LOCAL Utils == INSTANCE Utils
+Utils == INSTANCE Utils
 
-LOCAL Channel == INSTANCE BaseChannel
+Channel == INSTANCE BaseChannel
 
 Unchanged == UNCHANGED <<
     send_commitments
@@ -17,13 +17,6 @@ Unchanged == UNCHANGED <<
   , timed_out_packets
   , committed_timed_out_packets
 >>
-
-Init ==
-  /\  send_commitments = Utils!EmptyRecord
-  /\  ack_commitments = Utils!EmptyRecord
-  /\  committed_packets = {}
-  /\  timed_out_packets = {}
-  /\  committed_timed_out_packets = {}
 
 CreatePacket(
   chain_id,
@@ -47,9 +40,19 @@ CreatePacket(
       |-> payload
   ]
 
+Init ==
+  /\  send_commitments = Utils!EmptyRecord(CreatePacket(
+        "", "", "", "", "", ""))
+  /\  ack_commitments = Utils!EmptyRecord(<<>>)
+  /\  committed_packets = {}
+  /\  timed_out_packets = {}
+  /\  committed_timed_out_packets = {}
+
+\* @type: PACKET => PACKET_KEY;
 SourcePacketKey(packet) ==
   << packet.source_chain_id, packet.source_channel_id, packet.sequence >>
 
+\* @type: PACKET => PACKET_KEY;
 DestinationPacketKey(packet) ==
   << packet.destination_chain_id, packet.destination_channel_id, packet.sequence >>
 
@@ -86,6 +89,7 @@ SendPacket(chain_id, channel_id, sequence, payload) ==
           , committed_timed_out_packets
           >>
 
+\* @type: (PACKET, Seq(Str)) => Bool;
 ReceivePacket(packet, ack_acc) ==
   LET
     chain_id == packet.destination_chain_id
@@ -133,15 +137,20 @@ TimeoutPacket(packet) ==
       , committed_timed_out_packets
       >>
 
+\* @type: (CHAIN_ID, CHANNEL_ID, Str, Seq(Str)) => Bool;
 ConfirmPacket(chain_id, channel_id, sequence, acks) ==
   /\  Channel!ChannelIsOpen(chain_id, channel_id)
   /\  Channel!HasChannel(chain_id, channel_id)
   /\  LET
+        \* @type: PACKET_KEY;
         packet_key == << chain_id, channel_id, sequence >>
+
         channel_state == Channel!ChannelState(chain_id, channel_id)
         counterparty_chain_id == channel_state.counterparty_chain_id
         counterparty_channel_id == channel_state.counterparty_channel_id
         counterparty_channel_state == Channel!ChannelState(counterparty_chain_id, counterparty_channel_id)
+
+        \* @type: PACKET_KEY;
         counterparty_packet_key == << counterparty_chain_id, counterparty_channel_id, sequence >>
       IN
       /\  packet_key \in DOMAIN send_commitments
@@ -161,11 +170,13 @@ ConfirmTimeoutPacket(chain_id, channel_id, sequence) ==
   /\  Channel!ChannelIsOpen(chain_id, channel_id)
   /\  Channel!HasChannel(chain_id, channel_id)
   /\  LET
+        \* @type: PACKET_KEY;
         packet_key == << chain_id, channel_id, sequence >>
         channel_state == Channel!ChannelState(chain_id, channel_id)
         counterparty_chain_id == channel_state.counterparty_chain_id
         counterparty_channel_id == channel_state.counterparty_channel_id
         counterparty_channel_state == Channel!ChannelState(counterparty_chain_id, counterparty_channel_id)
+        \* @type: PACKET_KEY;
         counterparty_packet_key == << counterparty_chain_id, counterparty_channel_id, sequence >>
       IN
       /\  ~(packet_key \in committed_packets)
