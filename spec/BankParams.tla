@@ -1,7 +1,9 @@
 ----- MODULE BankParams ----
 
+EXTENDS Types
+
 CONSTANTS
-  \* @type: Set(CHAIN);
+  \* @type: Set(CHAIN_ID);
   AllChainIds,
 
   \* @type: Set(ADDRESS);
@@ -12,18 +14,6 @@ CONSTANTS
 
   \* @type: Int;
   InitialBalancePerUser
-
-\* @typeAlias: CHAIN = Str;
-\* @typeAlias: ADDRESS = Str;
-\* @typeAlias: TRANSFER = [
-\*    chain_id: CHAIN,
-\*    sender: ADDRESS,
-\*    receiver: ADDRESS,
-\*    amount: Int
-\* ];
-\* @typeAlias: BALANCE_KEY = << CHAIN, ADDRESS >>;
-\* @typeAlias: BANK_BALANCES = (BALANCE_KEY -> Int);
-Aliases == TRUE
 
 VARIABLES
   \* @type: BANK_BALANCES;

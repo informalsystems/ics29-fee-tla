@@ -26,7 +26,7 @@ LOCAL TotalSupply == Cardinality(AllUsers) * InitialBalancePerUser
 LOCAL account_balance(chain_balances, account) ==
   chain_balances[account]
 
-\* @type: ((BALANCE_KEY -> Int), CHAIN) => Int;
+\* @type: (BANK_BALANCES, CHAIN_ID) => Int;
 LOCAL TotalBalanceOnChain(chain_balances, chain_id) ==
   LET
     \* @type: (Int, BALANCE_KEY) => Int;

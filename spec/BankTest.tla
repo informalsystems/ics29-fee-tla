@@ -4,17 +4,7 @@ EXTENDS
     FiniteSets
   , Sequences
   , Naturals
-
-\* @typeAlias: CHAIN = Str;
-\* @typeAlias: ADDRESS = Str;
-\* @typeAlias: TRANSFER = [
-\*    chain_id: CHAIN,
-\*    sender: ADDRESS,
-\*    receiver: ADDRESS,
-\*    amount: Int
-\* ];
-\* @typeAlias: BALANCE_KEY = << CHAIN, ADDRESS >>;
-\* @typeAlias: BANK_BALANCES = (BALANCE_KEY -> Int);
+  , Types
 
 VARIABLES
   \* @type: Seq(TRANSFER);
