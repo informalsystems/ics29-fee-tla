@@ -13,6 +13,8 @@ CONSTANTS
   \* @type: Int;
   InitialBalancePerUser
 
+\* @typeAlias: CHAIN = Str;
+\* @typeAlias: ADDRESS = Str;
 \* @typeAlias: TRANSFER = [
 \*    chain_id: CHAIN,
 \*    sender: ADDRESS,
