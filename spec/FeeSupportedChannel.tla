@@ -130,6 +130,7 @@ NoAsymmetricFeeEnabled ==
     ( FeesEnabled(chain_a, channel_id_a) <=> FeesEnabled(chain_b, channel_id_b) )
 
 Invariant ==
+  \* /\ TRUE
   /\  NoAsymmetricFeeEnabled
 
 =====

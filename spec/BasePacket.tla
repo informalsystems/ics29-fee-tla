@@ -40,10 +40,25 @@ CreatePacket(
       |-> payload
   ]
 
+\* @type: PACKET_KEY -> PACKET;
+InitSendCommitments ==
+  LET
+    \* @type: PACKET;
+    packet == CreatePacket("", "", "", "", "", "")
+  IN
+  Utils!EmptyRecord(packet)
+
+\* @type: PACKET_KEY -> Seq(Str);
+InitAckCommitments ==
+  LET
+    \* @type: Seq(Str);
+    ack == <<>>
+  IN
+  Utils!EmptyRecord(ack)
+
 Init ==
-  /\  send_commitments = Utils!EmptyRecord(CreatePacket(
-        "", "", "", "", "", ""))
-  /\  ack_commitments = Utils!EmptyRecord(<<>>)
+  /\  send_commitments = InitSendCommitments
+  /\  ack_commitments = InitAckCommitments
   /\  committed_packets = {}
   /\  timed_out_packets = {}
   /\  committed_timed_out_packets = {}
@@ -92,9 +107,17 @@ SendPacket(chain_id, channel_id, sequence, payload) ==
 \* @type: (PACKET, Seq(Str)) => Bool;
 ReceivePacket(packet, ack_acc) ==
   LET
+    \* @type: CHAIN_ID;
     chain_id == packet.destination_chain_id
+
+    \* @type: CHANNEL_ID;
     channel_id == packet.destination_channel_id
+
+    \* @type: PACKET_KEY;
     packet_key == DestinationPacketKey(packet)
+
+    \* @type: Set(PACKET_KEY);
+    ack_keys == DOMAIN ack_commitments
   IN
   /\  Channel!ChannelIsOpen(chain_id, channel_id)
   /\  Channel!HasChannel(chain_id, channel_id)
@@ -203,12 +226,17 @@ SendAnyPacket(send_packet(_, _, _, _)) ==
         \E payload \in BasePayloads:
           send_packet(chain_id, channel_id, sequence, payload)
 
+\* @type: ((PACKET, Seq(Str)) => Bool) => Bool;
 ReceiveAnyPacket(receive_packet(_, _)) ==
   \E packet_key \in DOMAIN send_commitments:
   LET
+    \* @type: PACKET;
     packet == send_commitments[packet_key]
+
+    \* @type: Seq(Str);
+    acks == << >>
   IN
-  receive_packet(packet, << >>)
+  receive_packet(packet, acks)
 
 ConfirmAnyPacket(confirm_packet(_, _, _, _)) ==
   \E packet_key \in DOMAIN ack_commitments:

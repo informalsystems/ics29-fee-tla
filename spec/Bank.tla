@@ -23,15 +23,23 @@ LOCAL InitialBankBalances ==
 LOCAL TotalSupply == Cardinality(AllUsers) * InitialBalancePerUser
 
 \* @type: (BANK_BALANCES, BALANCE_KEY) => Int;
-LOCAL account_balance(chain_balances, account) ==
+account_balance(chain_balances, account) ==
   chain_balances[account]
 
+\* @type: << CHAIN_ID, ADDRESS >> => CHAIN_ID;
+account_chain_id(account) ==
+    LET
+      \* @type: CHAIN_ID;
+      chain_id == account[1]
+    IN
+    chain_id
+
 \* @type: (BANK_BALANCES, CHAIN_ID) => Int;
-LOCAL TotalBalanceOnChain(chain_balances, chain_id) ==
+TotalBalanceOnChain(chain_balances, chain_id) ==
   LET
     \* @type: (Int, BALANCE_KEY) => Int;
     balance_folder(total, account) ==
-      IF account[1] = chain_id
+      IF account_chain_id(account) = chain_id
       THEN
         total + account_balance(chain_balances, account)
       ELSE

@@ -6,13 +6,13 @@ EXTENDS
   , Naturals
   , MainParams
 
-LOCAL Utils == INSTANCE Utils
+Utils == INSTANCE Utils
 
-LOCAL Channel == INSTANCE FeeSupportedChannel
+Channel == INSTANCE FeeSupportedChannel
 
-LOCAL Packet == INSTANCE FeeSupportedPacket
+Packet == INSTANCE FeeSupportedPacket
 
-LOCAL Bank == INSTANCE Bank
+Bank == INSTANCE Bank
 
 Init ==
   /\  Bank!Init
@@ -20,6 +20,9 @@ Init ==
   /\  Packet!Init
 
 Next ==
+\*   \/  /\  Channel!Unchanged
+\*       /\  Bank!Unchanged
+\*       /\  Packet!Unchanged
   \/  /\  Channel!Next
       /\  Bank!Unchanged
       /\  Packet!Unchanged
@@ -68,7 +71,7 @@ FindConnectChannelsWithFeeEnabled ==
   /\  Cardinality(DOMAIN fee_escrows) > 0
   /\  Cardinality(completed_escrows) > 0
   /\  FeeModulesHasZeroBalance
-  /\  AllRelayersNotPaid
+\*   /\  AllRelayersNotPaid
 \*   /\  FeeModuleHasNegativeBalance
 
   \* /\  \E chain_id \in AllChainIds:

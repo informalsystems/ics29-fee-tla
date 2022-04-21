@@ -21,6 +21,7 @@ HandshakeState(chain_id, channel_id) ==
 CounterpartyChainId(chain_id, channel_id) ==
   ChannelState(chain_id, channel_id).counterparty_chain_id
 
+\* @type: (CHAIN_ID, CHANNEL_ID) => Bool;
 HasChannel(chain_id, channel_id) ==
   Utils!HasKey(all_channel_states, << chain_id, channel_id >>)
 
@@ -34,6 +35,7 @@ ChannelsConnected(
     \in
     connected_channels
 
+\* @type: (CHAIN_ID, CHANNEL_ID) => Bool;
 ChannelIsOpen(chain_id, channel_id) ==
   /\  HasChannel(chain_id, channel_id)
   /\  HandshakeState(chain_id, channel_id) = ChanOpenState

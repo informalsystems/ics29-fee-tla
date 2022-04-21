@@ -2,6 +2,7 @@
 
 EXTENDS
     Naturals
+  , Types
   , Sequences
   , FeeSupportedPacketParams
 
@@ -13,22 +14,30 @@ Utils == INSTANCE Utils
 
 Bank == INSTANCE Bank
 
+\* @type: PACKET_KEY -> ESCROW;
+InitFeeEscrows ==
+  LET
+    \* @type: ESCROW;
+    escrow == [
+      receive_fee |-> 0,
+      ack_fee |-> 0,
+      timeout_fee |-> 0,
+      refund_address |-> ""
+    ]
+  IN
+  Utils!EmptyRecord(escrow)
+
 Init ==
   /\  BasePacket!Init
-  /\  fee_escrows = Utils!EmptyRecord([
-        receive_fee |-> 0,
-        ack_fee |-> 0,
-        timeout_fee |-> 0,
-        refund_address |-> ""
-      ])
+  /\  fee_escrows = InitFeeEscrows
   /\  completed_escrows = {}
   /\  relay_history = << >>
 
 Unchanged ==
   /\  BasePacket!Unchanged
-  /\  Bank!Unchanged
   /\  UNCHANGED << fee_escrows, completed_escrows, relay_history >>
 
+\* @type: (CHAIN_ID, CHANNEL_ID, Str, ADDRESS, Int, Int, Int) => Bool;
 PayPacketFee(
   chain_id
 , channel_id
@@ -50,9 +59,13 @@ PayPacketFee(
         , receive_fee + ack_fee + timeout_fee
         )
       )
-  /\  fee_escrows' = Utils!AddEntry(
+  /\  LET
+        \* @type: PACKET_KEY;
+        escrow_key == << chain_id, channel_id, sequence >>
+      IN
+      fee_escrows' = Utils!AddEntry(
         fee_escrows,
-        << chain_id, channel_id, sequence >>,
+        escrow_key,
         [ receive_fee
             |-> receive_fee
         , ack_fee
@@ -64,6 +77,7 @@ PayPacketFee(
         ]
       )
 
+\* @type: (CHAIN_ID, CHANNEL_ID, Str, Str) => Bool;
 SendPacket(chain_id, channel_id, sequence, payload) ==
   /\  BasePacket!SendPacket(chain_id, channel_id, sequence, payload)
   /\  \/  /\  Channel!FeesEnabled(chain_id, channel_id)
@@ -82,6 +96,7 @@ SendPacket(chain_id, channel_id, sequence, payload) ==
       \/  /\  UNCHANGED << fee_escrows, completed_escrows, relay_history >>
           /\  Bank!Unchanged
 
+\* @type: (PACKET, Seq(Str)) => Bool;
 ReceivePacket(packet, ack_acc) ==
   /\  IF  Channel!FeesEnabled(
             packet.destination_chain_id
@@ -120,6 +135,7 @@ ReceivePacket(packet, ack_acc) ==
   /\  Bank!Unchanged
   /\  UNCHANGED << fee_escrows, completed_escrows >>
 
+\* @type: (CHAIN_ID, CHANNEL_ID, Str, Seq(Str)) => Bool;
 ConfirmPacket(chain_id, channel_id, sequence, acks) ==
   /\  IF  Channel!FeesEnabled(chain_id, channel_id)
       THEN
@@ -184,11 +200,13 @@ ConfirmPacket(chain_id, channel_id, sequence, acks) ==
         /\  Bank!Unchanged
         /\  UNCHANGED << fee_escrows, completed_escrows, relay_history >>
 
+\* @type: (PACKET) => Bool;
 TimeoutPacket(packet) ==
   /\  BasePacket!TimeoutPacket(packet)
   /\  UNCHANGED << fee_escrows, completed_escrows, relay_history >>
   /\  Bank!Unchanged
 
+\* @type: (CHAIN_ID, CHANNEL_ID, Str) => Bool;
 ConfirmTimeoutPacket(chain_id, channel_id, sequence) ==
   /\  BasePacket!ConfirmTimeoutPacket(chain_id, channel_id, sequence)
   /\
@@ -250,6 +268,6 @@ Next ==
 \* Next ==
 \*   /\  BasePacket!Next
 \*   /\  Bank!Unchanged
-\*   /\  UNCHANGED << fee_escrows, completed_escrows >>
+\*   /\  UNCHANGED << fee_escrows, completed_escrows, relay_history >>
 
 =====
