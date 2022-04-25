@@ -108,10 +108,27 @@ TransferStateless(balances, transfer) ==
   IN
   new_balances
 
+\* @type: Seq(TRANSFER) => Bool;
+AddTransferHistory(transfers) ==
+  IF RecordHistory
+  THEN
+    transfer_history' = Utils!Concat(transfer_history, transfers)
+  ELSE
+    UNCHANGED transfer_history
+
+\* @type: TRANSFER => Bool;
+AddSingleTransferHistory(transfer) ==
+  LET
+    \* @type: Seq(TRANSFER);
+    transfers == << transfer >>
+  IN
+  AddTransferHistory(transfers)
+
+\* @type: TRANSFER => Bool;
 SingleTransfer(transfer) ==
   /\  TransferInvariantStateless(bank_balances, transfer)
   /\  bank_balances' = TransferStateless(bank_balances, transfer)
-  /\  transfer_history' = Utils!Concat(transfer_history, << transfer >>)
+  /\  AddSingleTransferHistory(transfer)
 
 \* @type: Seq(TRANSFER) => Bool;
 MultiTransfer(transfers) ==
@@ -130,7 +147,7 @@ MultiTransfer(transfers) ==
       , bank_balances
       , transfers
       )
-  /\  transfer_history' = Utils!Concat(transfer_history, transfers)
+  /\  AddTransferHistory(transfers)
 
 HasAccount(chain_id, account) ==
   << chain_id, account >> \in DOMAIN bank_balances

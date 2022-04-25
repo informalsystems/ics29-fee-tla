@@ -77,6 +77,17 @@ PayPacketFee(
         ]
       )
 
+\* @type: RELAY => Bool;
+AddRelayHistory(relay) ==
+  IF RecordHistory
+  THEN
+    relay_history' = Utils!Concat(
+      relay_history,
+      << relay >>
+    )
+  ELSE
+    UNCHANGED relay_history
+
 \* @type: (CHAIN_ID, CHANNEL_ID, SEQUENCE, Str) => Bool;
 SendPacket(chain_id, channel_id, sequence, payload) ==
   /\  BasePacket!SendPacket(chain_id, channel_id, sequence, payload)
@@ -113,22 +124,20 @@ ReceivePacket(packet, ack_acc) ==
             )
           IN
           /\  BasePacket!ReceivePacket(packet, ack)
-          /\  relay_history' = Utils!Concat(
-                relay_history
-              , <<  [ event
-                        |-> "receive"
-                    , relayer
-                        |-> relayer
-                    , counterparty_relayer
-                        |-> counterparty_relayer
-                    , chain_id
-                        |-> packet.destination_chain_id
-                    , channel_id
-                        |-> packet.destination_channel_id
-                    , sequence
-                        |-> packet.sequence
-                  ]
-                >>)
+          /\  AddRelayHistory([
+                event
+                  |-> "receive"
+              , relayer
+                  |-> relayer
+              , counterparty_relayer
+                  |-> counterparty_relayer
+              , chain_id
+                  |-> packet.destination_chain_id
+              , channel_id
+                  |-> packet.destination_channel_id
+              , sequence
+                  |-> packet.sequence
+            ])
       ELSE
           /\  BasePacket!ReceivePacket(packet, ack_acc)
           /\  UNCHANGED << relay_history >>
@@ -175,20 +184,18 @@ ConfirmPacket(chain_id, channel_id, sequence, acks) ==
                           , escrow.timeout_fee
                           )
                         >> )
-                    /\  relay_history' = Utils!Concat(
-                          relay_history
-                        , <<  [ event
-                                  |-> "ack"
-                              , relayer
-                                  |-> reverse_relayer
-                              , chain_id
-                                  |-> chain_id
-                              , channel_id
-                                  |-> channel_id
-                              , sequence
-                                  |-> sequence
-                            ]
-                          >>)
+                    /\  AddRelayHistory(
+                          [ event
+                              |-> "ack"
+                          , relayer
+                              |-> reverse_relayer
+                          , chain_id
+                              |-> chain_id
+                          , channel_id
+                              |-> channel_id
+                          , sequence
+                              |-> sequence
+                          ])
               /\  completed_escrows' = completed_escrows \union { escrow_key }
               /\  UNCHANGED << fee_escrows >>
             ELSE
@@ -239,20 +246,18 @@ ConfirmTimeoutPacket(chain_id, channel_id, sequence) ==
                     >> )
               ELSE
                 Bank!Unchanged
-          /\  relay_history' = Utils!Concat(
-                relay_history
-              , <<  [ event
-                        |-> "tiemout"
-                    , relayer
-                        |-> timeout_relayer
-                    , chain_id
-                        |-> chain_id
-                    , channel_id
-                        |-> channel_id
-                    , sequence
-                        |-> sequence
-                  ]
-                >>)
+          /\  AddRelayHistory(
+                [ event
+                    |-> "timeout"
+                , relayer
+                    |-> timeout_relayer
+                , chain_id
+                    |-> chain_id
+                , channel_id
+                    |-> channel_id
+                , sequence
+                    |-> sequence
+                ])
           /\  completed_escrows' = completed_escrows \union { escrow_key }
   /\  UNCHANGED << fee_escrows >>
 

@@ -14,16 +14,19 @@ CONSTANTS
   \* @type: Set(Int);
   AllFees,
 
-  \* @type: Set(ADDRESS);
-  AllModules,
-
-  \* @type: Int;
-  InitialBalancePerUser,
-
   \* @type: ADDRESS;
   FeeModuleAccount,
 
   \* @type: ADDRESS;
-  InvalidAddress
+  InvalidAddress,
+
+  \* @type: Bool;
+  RecordHistory,
+
+  \* @type: Set(ADDRESS);
+  AllModules,
+
+  \* @type: Int;
+  InitialBalancePerUser
 
 =====

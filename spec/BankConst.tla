@@ -13,6 +13,9 @@ CONSTANTS
   AllModules,
 
   \* @type: Int;
-  InitialBalancePerUser
+  InitialBalancePerUser,
+
+  \* @type: Bool;
+  RecordHistory
 
 ====

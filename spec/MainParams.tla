@@ -12,15 +12,15 @@ EXTENDS
 \* @type: Set(CHAIN_ID);
 InitChainIds ==
   { "1_OF_CHAIN_ID"
-  \* , "chain-b"
-  \* , "chain-c"
+  \* , "2_OF_CHAIN_ID"
+  \* , "3_OF_CHAIN_ID"
   }
 
 \* @type: Set(CHAIN_ID);
 CounterpartyChainIds ==
   { "9_OF_CHAIN_ID"
-  \* , "chain-y"
-  \* , "chain-z"
+  \* , "8_OF_CHAIN_ID"
+  \* , "7_OF_CHAIN_ID"
   }
 
 \* @type: CHAIN_ID;
@@ -59,17 +59,15 @@ AllModules ==
 \* @type: Set(CHANNEL_ID);
 InitChannelIds ==
   { "1_OF_CHANNEL_ID"
-  \* , "channel-2"
-  \* , "channel-3"
-  \* , "channel-4"
+  \* , "2_OF_CHANNEL_ID"
+  \* , "3_OF_CHANNEL_ID"
 }
 
 \* @type: Set(CHANNEL_ID);
 OpenTryChannelIds ==
   { "9_OF_CHANNEL_ID"
-  \* , "channel-8"
-  \* , "channel-7"
-  \* , "channel-6"
+  \* , "8_OF_CHANNEL_ID"
+  \* , "7_OF_CHANNEL_ID"
   }
 
 \* @type: CHANNEL_ID;
@@ -110,5 +108,7 @@ AllFees ==
 \*   , 20
 \*   , 30
   }
+
+RecordHistory == FALSE
 
 ====
