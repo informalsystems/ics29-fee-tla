@@ -1,6 +1,6 @@
 ---- MODULE MainParams ----
 
-EXTENDS Types
+EXTENDS Apalache, Types
 
 VARIABLES
   \* @type: BANK_BALANCES;
@@ -60,46 +60,56 @@ CounterpartyChainIds ==
   }
 
 \* @type: CHAIN_ID;
-NullChainId == "0_OF_CHAIN_ID"
+NullChainId == "null_OF_CHAIN_ID"
 
 AllChainIds == InitChainIds \union CounterpartyChainIds
 
+\* @type: Set(ADDRESS);
 RegularUsers ==
   { "user-1"
   \* , "user-2"
   }
 
+\* @type: Set(ADDRESS);
 Relayers ==
   { "relayer-1"
   \* , "relayer-2"
   }
 
+\* @type: Set(ADDRESS);
 AllUsers ==
   RegularUsers \union Relayers
 
+\* @type: ADDRESS;
 InvalidAddress ==
   "invalid-address"
 
+\* @type: ADDRESS;
 FeeModuleAccount ==
-  "fee-middleware"
+  "fee-module"
 
 AllModules ==
   { FeeModuleAccount
   }
 
+\* @type: Set(CHANNEL_ID);
 InitChannelIds ==
-  { "channel-1"
+  { "1_OF_CHANNEL_ID"
   \* , "channel-2"
   \* , "channel-3"
   \* , "channel-4"
 }
 
+\* @type: Set(CHANNEL_ID);
 OpenTryChannelIds ==
-  { "channel-9"
+  { "9_OF_CHANNEL_ID"
   \* , "channel-8"
   \* , "channel-7"
   \* , "channel-6"
   }
+
+\* @type: CHANNEL_ID;
+NullChannelId == "null_OF_CHANNEL_ID"
 
 ChanInitState == "Init"
 ChanOpenState == "Open"

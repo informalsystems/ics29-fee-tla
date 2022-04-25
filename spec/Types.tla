@@ -1,6 +1,5 @@
 ----- MODULE Types ----
 
-\* @typeAlias: CHANNEL_ID = Str;
 \* @typeAlias: ADDRESS = Str;
 \* @typeAlias: TRANSFER = [
 \*    chain_id: CHAIN_ID,

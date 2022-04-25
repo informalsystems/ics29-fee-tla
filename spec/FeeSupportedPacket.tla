@@ -22,7 +22,7 @@ InitFeeEscrows ==
       receive_fee |-> 0,
       ack_fee |-> 0,
       timeout_fee |-> 0,
-      refund_address |-> ""
+      refund_address |-> InvalidAddress
     ]
   IN
   Utils!EmptyRecord(escrow)

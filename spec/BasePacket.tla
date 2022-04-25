@@ -45,7 +45,7 @@ CreatePacket(
 InitSendCommitments ==
   LET
     \* @type: PACKET;
-    packet == CreatePacket(NullChainId, NullChainId, "", "", "", "")
+    packet == CreatePacket(NullChainId, NullChainId, NullChannelId, NullChannelId, "", "")
   IN
   Utils!EmptyRecord(packet)
 
@@ -72,6 +72,7 @@ SourcePacketKey(packet) ==
 DestinationPacketKey(packet) ==
   << packet.destination_chain_id, packet.destination_channel_id, packet.sequence >>
 
+\* @type: (CHAIN_ID, CHANNEL_ID, Str, Str) => Bool;
 SendPacket(chain_id, channel_id, sequence, payload) ==
       \* It is enough to being able to send packet when only one end
       \* of the channels is Open, while the other is still in TryOpen

@@ -8,6 +8,7 @@ EXTENDS
 
 Utils == INSTANCE Utils
 
+\* @type: Set(CHANNEL_ID);
 AllChannelIds == InitChannelIds \union OpenTryChannelIds
 
 \* @type: (CHAIN_ID, CHANNEL_ID) => CHANNEL_STATE;
@@ -47,7 +48,7 @@ Init ==
         counterparty_chain_id
           |-> NullChainId,
         counterparty_channel_id
-          |-> "",
+          |-> NullChannelId,
         versions
           |-> <<>>
       ])
@@ -73,13 +74,14 @@ OnChanOpenInit(
     /\  UNCHANGED << connected_channels >>
     /\  \E version \in BaseVersions:
         LET
+          \* @type: CHANNEL_STATE;
           channel_state == [
             handshake_state
               |-> ChanInitState,
             counterparty_chain_id
               |-> counterparty_chain_id,
             counterparty_channel_id
-              |-> "",
+              |-> NullChannelId,
             versions
               |-> Utils!Concat(versions_acc, << version >>)
           ]

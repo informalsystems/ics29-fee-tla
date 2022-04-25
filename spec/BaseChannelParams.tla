@@ -21,6 +21,9 @@ CONSTANTS
   \* @type: Set(CHANNEL_ID);
   OpenTryChannelIds,
 
+  \* @type: CHANNEL_ID;
+  NullChannelId,
+
   \* @type: Str;
   ChanInitState,
 
