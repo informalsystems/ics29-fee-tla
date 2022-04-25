@@ -8,7 +8,8 @@ EXTENDS
 
 Utils == INSTANCE Utils
 
-Channel == INSTANCE FeeSupportedChannel
+\* Channel == INSTANCE FeeSupportedChannel
+Channel == INSTANCE FixedChannel
 
 Packet == INSTANCE FeeSupportedPacket
 
