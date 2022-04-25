@@ -45,7 +45,7 @@ Init ==
         handshake_state
           |-> "",
         counterparty_chain_id
-          |-> "",
+          |-> NullChainId,
         counterparty_channel_id
           |-> "",
         versions
@@ -91,6 +91,7 @@ OnChanOpenInit(
               channel_state
             )
 
+\* @type: (CHAIN_ID, CHAIN_ID, CHANNEL_ID, CHANNEL_ID, Seq(Str), Seq(Str)) => Bool;
 OnChanOpenTry(chain_id, counterparty_chain_id, channel_id, counterparty_channel_id, versions, versions_acc) ==
   /\  ValidVersions(versions)
   /\  ~HasChannel(chain_id, channel_id)
@@ -141,6 +142,7 @@ OnChanOpenAck(chain_id, channel_id, counterparty_channel_id, versions) ==
             new_channel_state
           )
 
+\* @type: (CHAIN_ID, CHANNEL_ID) => Bool;
 OnChanOpenConfirm(chain_id, channel_id) ==
   LET
     channel_state == ChannelState(chain_id, channel_id)
@@ -170,9 +172,9 @@ OnChanOpenConfirm(chain_id, channel_id) ==
                 } }
 
 AnyChanOpenInit(on_chan_open_init(_, _, _, _)) ==
-  \E chain_id \in AllChainIds:
+  \E chain_id \in InitChainIds:
+  \E counterparty_chain_id \in CounterpartyChainIds:
   \E channel_id \in InitChannelIds:
-  \E counterparty_chain_id \in AllChainIds:
     on_chan_open_init(
       chain_id,
       counterparty_chain_id,
@@ -181,8 +183,8 @@ AnyChanOpenInit(on_chan_open_init(_, _, _, _)) ==
     )
 
 AnyChanOpenTry(on_chan_open_try(_, _, _, _, _, _)) ==
-  \E chain_id \in AllChainIds:
-  \E channel_id \in AllChannelIds:
+  \E chain_id \in InitChainIds:
+  \E channel_id \in InitChannelIds:
     /\  HasChannel(chain_id, channel_id)
     /\  HandshakeState(chain_id, channel_id) = ChanInitState
     /\  \E counterparty_channel_id \in OpenTryChannelIds:

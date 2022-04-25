@@ -6,6 +6,15 @@ CONSTANTS
   \* @type: Set(CHAIN_ID);
   AllChainIds,
 
+  \* @type: Set(CHAIN_ID);
+  InitChainIds,
+
+  \* @type: Set(CHAIN_ID);
+  CounterpartyChainIds,
+
+  \* @type: CHAIN_ID;
+  NullChainId,
+
   \* @type: Set(CHANNEL_ID);
   InitChannelIds,
 

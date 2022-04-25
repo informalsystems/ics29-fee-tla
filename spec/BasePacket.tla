@@ -18,6 +18,7 @@ Unchanged == UNCHANGED <<
   , committed_timed_out_packets
 >>
 
+\* @type: (CHAIN_ID, CHAIN_ID, CHANNEL_ID, CHANNEL_ID, Str, Str) => PACKET;
 CreatePacket(
   chain_id,
   counterparty_chain_id,
@@ -44,7 +45,7 @@ CreatePacket(
 InitSendCommitments ==
   LET
     \* @type: PACKET;
-    packet == CreatePacket("", "", "", "", "", "")
+    packet == CreatePacket(NullChainId, NullChainId, "", "", "", "")
   IN
   Utils!EmptyRecord(packet)
 
@@ -146,6 +147,7 @@ ReceivePacket(packet, ack_acc) ==
           , committed_timed_out_packets
           >>
 
+\* @type: PACKET => Bool;
 TimeoutPacket(packet) ==
   LET
     packet_key == DestinationPacketKey(packet)
@@ -189,6 +191,7 @@ ConfirmPacket(chain_id, channel_id, sequence, acks) ==
           , committed_timed_out_packets
           >>
 
+\* @type: (CHAIN_ID, CHANNEL_ID, Str) => Bool;
 ConfirmTimeoutPacket(chain_id, channel_id, sequence) ==
   /\  Channel!ChannelIsOpen(chain_id, channel_id)
   /\  Channel!HasChannel(chain_id, channel_id)

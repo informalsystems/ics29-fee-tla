@@ -45,20 +45,33 @@ VARIABLES
   \* @type: Set(PACKET_KEY);
   committed_timed_out_packets
 
-AllChainIds ==
-  { "chain-a"
-\*   , "chain-b"
+\* @type: Set(CHAIN_ID);
+InitChainIds ==
+  { "1_OF_CHAIN_ID"
+  \* , "chain-b"
   \* , "chain-c"
   }
 
+\* @type: Set(CHAIN_ID);
+CounterpartyChainIds ==
+  { "9_OF_CHAIN_ID"
+  \* , "chain-y"
+  \* , "chain-z"
+  }
+
+\* @type: CHAIN_ID;
+NullChainId == "0_OF_CHAIN_ID"
+
+AllChainIds == InitChainIds \union CounterpartyChainIds
+
 RegularUsers ==
   { "user-1"
-\*   , "user-2"
+  \* , "user-2"
   }
 
 Relayers ==
   { "relayer-1"
-\*   , "relayer-2"
+  \* , "relayer-2"
   }
 
 AllUsers ==
@@ -76,14 +89,14 @@ AllModules ==
 
 InitChannelIds ==
   { "channel-1"
-\*   , "channel-2"
+  \* , "channel-2"
   \* , "channel-3"
   \* , "channel-4"
 }
 
 OpenTryChannelIds ==
   { "channel-9"
-\*   , "channel-8"
+  \* , "channel-8"
   \* , "channel-7"
   \* , "channel-6"
   }
@@ -101,7 +114,7 @@ AllChannelIds == InitChannelIds \union OpenTryChannelIds
 
 AllSequences ==
   { "sequence-1"
-\*   , "sequence-2"
+  \* , "sequence-2"
 \*   , "sequence-3"
   }
 
