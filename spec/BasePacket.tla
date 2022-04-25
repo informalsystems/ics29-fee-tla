@@ -65,13 +65,17 @@ Init ==
   /\  timed_out_packets = {}
   /\  committed_timed_out_packets = {}
 
+\* @type: (CHAIN_ID, CHANNEL_ID, Str) => PACKET_KEY;
+PacketKey(chain_id, channel_id, sequence) ==
+  << chain_id, channel_id, sequence >>
+
 \* @type: PACKET => PACKET_KEY;
 SourcePacketKey(packet) ==
-  << packet.source_chain_id, packet.source_channel_id, packet.sequence >>
+  PacketKey(packet.source_chain_id, packet.source_channel_id, packet.sequence)
 
 \* @type: PACKET => PACKET_KEY;
 DestinationPacketKey(packet) ==
-  << packet.destination_chain_id, packet.destination_channel_id, packet.sequence >>
+  PacketKey(packet.destination_chain_id, packet.destination_channel_id, packet.sequence)
 
 \* @type: (CHAIN_ID, CHANNEL_ID, Str, Str) => Bool;
 SendPacket(chain_id, channel_id, sequence, payload) ==
@@ -169,16 +173,12 @@ ConfirmPacket(chain_id, channel_id, sequence, acks) ==
   /\  Channel!ChannelIsOpen(chain_id, channel_id)
   /\  Channel!HasChannel(chain_id, channel_id)
   /\  LET
-        \* @type: PACKET_KEY;
-        packet_key == << chain_id, channel_id, sequence >>
-
+        packet_key == PacketKey(chain_id, channel_id, sequence)
         channel_state == Channel!ChannelState(chain_id, channel_id)
         counterparty_chain_id == channel_state.counterparty_chain_id
         counterparty_channel_id == channel_state.counterparty_channel_id
         counterparty_channel_state == Channel!ChannelState(counterparty_chain_id, counterparty_channel_id)
-
-        \* @type: PACKET_KEY;
-        counterparty_packet_key == << counterparty_chain_id, counterparty_channel_id, sequence >>
+        counterparty_packet_key == PacketKey(counterparty_chain_id, counterparty_channel_id, sequence)
       IN
       /\  packet_key \in DOMAIN send_commitments
       /\  counterparty_packet_key \in DOMAIN ack_commitments
@@ -198,14 +198,12 @@ ConfirmTimeoutPacket(chain_id, channel_id, sequence) ==
   /\  Channel!ChannelIsOpen(chain_id, channel_id)
   /\  Channel!HasChannel(chain_id, channel_id)
   /\  LET
-        \* @type: PACKET_KEY;
-        packet_key == << chain_id, channel_id, sequence >>
+        packet_key == PacketKey(chain_id, channel_id, sequence)
         channel_state == Channel!ChannelState(chain_id, channel_id)
         counterparty_chain_id == channel_state.counterparty_chain_id
         counterparty_channel_id == channel_state.counterparty_channel_id
         counterparty_channel_state == Channel!ChannelState(counterparty_chain_id, counterparty_channel_id)
-        \* @type: PACKET_KEY;
-        counterparty_packet_key == << counterparty_chain_id, counterparty_channel_id, sequence >>
+        counterparty_packet_key == PacketKey(counterparty_chain_id, counterparty_channel_id, sequence)
       IN
       /\  ~(packet_key \in committed_packets)
       /\  ~(packet_key \in committed_timed_out_packets)

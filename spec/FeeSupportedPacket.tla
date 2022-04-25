@@ -61,8 +61,7 @@ PayPacketFee(
         )
       )
   /\  LET
-        \* @type: PACKET_KEY;
-        escrow_key == << chain_id, channel_id, sequence >>
+        escrow_key == BasePacket!PacketKey(chain_id, channel_id, sequence)
       IN
       fee_escrows' = Utils!AddEntry(
         fee_escrows,
@@ -144,8 +143,7 @@ ConfirmPacket(chain_id, channel_id, sequence, acks) ==
         /\  BasePacket!ConfirmPacket(chain_id, channel_id, sequence, Tail(acks))
         /\  LET
               forward_relayer == acks[1]
-              \* @type: PACKET_KEY;
-              escrow_key == << chain_id, channel_id, sequence >>
+              escrow_key == BasePacket!PacketKey(chain_id, channel_id, sequence)
             IN
             IF escrow_key \in DOMAIN fee_escrows
             THEN
@@ -213,8 +211,7 @@ ConfirmTimeoutPacket(chain_id, channel_id, sequence) ==
   /\
       \E timeout_relayer \in Relayers:
         LET
-          \* @type: PACKET_KEY;
-          escrow_key == << chain_id, channel_id, sequence >>
+          escrow_key == BasePacket!PacketKey(chain_id, channel_id, sequence)
         IN
           /\  IF escrow_key \in DOMAIN fee_escrows
               THEN
