@@ -16,14 +16,14 @@
 \* @typeAlias: PACKET_KEY = <<
 \*    CHAIN_ID,
 \*    CHANNEL_ID,
-\*    Str
+\*    SEQUENCE
 \* >>;
 \* @typeAlias: PACKET = [
 \*    chain_id: CHAIN_ID,
 \*    counterparty_chain_id: CHAIN_ID,
 \*    channel_id: CHANNEL_ID,
 \*    counterparty_channel_id: CHANNEL_ID,
-\*    sequence: Str,
+\*    sequence: SEQUENCE,
 \*    payload: Str
 \* ];
 \* @typeAlias: ESCROW = [
@@ -37,7 +37,7 @@
 \*    relayer: ADDRESS,
 \*    chain_id: CHAIN_ID,
 \*    channel_id: CHANNEL_ID,
-\*    sequence: Str
+\*    sequence: SEQUENCE
 \* ];
 \* @typeAlias: BALANCE_KEY = << CHAIN_ID, ADDRESS >>;
 \* @typeAlias: BANK_BALANCES = (BALANCE_KEY -> Int);

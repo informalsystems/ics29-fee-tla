@@ -86,11 +86,15 @@ InitialBalancePerUser == 1000
 
 AllChannelIds == InitChannelIds \union OpenTryChannelIds
 
+\* @type: Set(SEQUENCE);
 AllSequences ==
-  { "sequence-1"
-  \* , "sequence-2"
-\*   , "sequence-3"
+  { "1_OF_SEQUENCE"
+  , "2_OF_SEQUENCE"
+  , "3_OF_SEQUENCE"
   }
+
+\* @type: SEQUENCE;
+NullSequence == "null_OF_SEQUENCE"
 
 BasePayloads ==
   { "token-transfer"

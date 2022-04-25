@@ -8,13 +8,16 @@ CONSTANTS
   \* @type: Set(ADDRESS);
   AllUsers,
 
-  \* @type: Set(Str);
+  \* @type: Set(SEQUENCE);
   AllSequences,
 
   \* @type: Set(Str);
   BasePayloads,
 
   \* @type: Set(Str);
-  BaseAcks
+  BaseAcks,
+
+  \* @type: SEQUENCE;
+  NullSequence
 
 =====

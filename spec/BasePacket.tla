@@ -19,7 +19,7 @@ Unchanged == UNCHANGED <<
   , committed_timed_out_packets
 >>
 
-\* @type: (CHAIN_ID, CHAIN_ID, CHANNEL_ID, CHANNEL_ID, Str, Str) => PACKET;
+\* @type: (CHAIN_ID, CHAIN_ID, CHANNEL_ID, CHANNEL_ID, SEQUENCE, Str) => PACKET;
 CreatePacket(
   chain_id,
   counterparty_chain_id,
@@ -46,7 +46,7 @@ CreatePacket(
 InitSendCommitments ==
   LET
     \* @type: PACKET;
-    packet == CreatePacket(NullChainId, NullChainId, NullChannelId, NullChannelId, "", "")
+    packet == CreatePacket(NullChainId, NullChainId, NullChannelId, NullChannelId, NullSequence, "")
   IN
   Utils!EmptyRecord(packet)
 
@@ -65,7 +65,7 @@ Init ==
   /\  timed_out_packets = {}
   /\  committed_timed_out_packets = {}
 
-\* @type: (CHAIN_ID, CHANNEL_ID, Str) => PACKET_KEY;
+\* @type: (CHAIN_ID, CHANNEL_ID, SEQUENCE) => PACKET_KEY;
 PacketKey(chain_id, channel_id, sequence) ==
   << chain_id, channel_id, sequence >>
 
@@ -77,7 +77,7 @@ SourcePacketKey(packet) ==
 DestinationPacketKey(packet) ==
   PacketKey(packet.destination_chain_id, packet.destination_channel_id, packet.sequence)
 
-\* @type: (CHAIN_ID, CHANNEL_ID, Str, Str) => Bool;
+\* @type: (CHAIN_ID, CHANNEL_ID, SEQUENCE, Str) => Bool;
 SendPacket(chain_id, channel_id, sequence, payload) ==
       \* It is enough to being able to send packet when only one end
       \* of the channels is Open, while the other is still in TryOpen
@@ -168,7 +168,7 @@ TimeoutPacket(packet) ==
       , committed_timed_out_packets
       >>
 
-\* @type: (CHAIN_ID, CHANNEL_ID, Str, Seq(Str)) => Bool;
+\* @type: (CHAIN_ID, CHANNEL_ID, SEQUENCE, Seq(Str)) => Bool;
 ConfirmPacket(chain_id, channel_id, sequence, acks) ==
   /\  Channel!ChannelIsOpen(chain_id, channel_id)
   /\  Channel!HasChannel(chain_id, channel_id)
@@ -193,7 +193,7 @@ ConfirmPacket(chain_id, channel_id, sequence, acks) ==
           , committed_timed_out_packets
           >>
 
-\* @type: (CHAIN_ID, CHANNEL_ID, Str) => Bool;
+\* @type: (CHAIN_ID, CHANNEL_ID, SEQUENCE) => Bool;
 ConfirmTimeoutPacket(chain_id, channel_id, sequence) ==
   /\  Channel!ChannelIsOpen(chain_id, channel_id)
   /\  Channel!HasChannel(chain_id, channel_id)

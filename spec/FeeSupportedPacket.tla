@@ -38,7 +38,7 @@ Unchanged ==
   /\  BasePacket!Unchanged
   /\  UNCHANGED << fee_escrows, completed_escrows, relay_history >>
 
-\* @type: (CHAIN_ID, CHANNEL_ID, Str, ADDRESS, Int, Int, Int) => Bool;
+\* @type: (CHAIN_ID, CHANNEL_ID, SEQUENCE, ADDRESS, Int, Int, Int) => Bool;
 PayPacketFee(
   chain_id
 , channel_id
@@ -77,7 +77,7 @@ PayPacketFee(
         ]
       )
 
-\* @type: (CHAIN_ID, CHANNEL_ID, Str, Str) => Bool;
+\* @type: (CHAIN_ID, CHANNEL_ID, SEQUENCE, Str) => Bool;
 SendPacket(chain_id, channel_id, sequence, payload) ==
   /\  BasePacket!SendPacket(chain_id, channel_id, sequence, payload)
   /\  \/  /\  Channel!FeesEnabled(chain_id, channel_id)
@@ -135,7 +135,7 @@ ReceivePacket(packet, ack_acc) ==
   /\  Bank!Unchanged
   /\  UNCHANGED << fee_escrows, completed_escrows >>
 
-\* @type: (CHAIN_ID, CHANNEL_ID, Str, Seq(Str)) => Bool;
+\* @type: (CHAIN_ID, CHANNEL_ID, SEQUENCE, Seq(Str)) => Bool;
 ConfirmPacket(chain_id, channel_id, sequence, acks) ==
   /\  IF  Channel!FeesEnabled(chain_id, channel_id)
       THEN
@@ -205,7 +205,7 @@ TimeoutPacket(packet) ==
   /\  UNCHANGED << fee_escrows, completed_escrows, relay_history >>
   /\  Bank!Unchanged
 
-\* @type: (CHAIN_ID, CHANNEL_ID, Str) => Bool;
+\* @type: (CHAIN_ID, CHANNEL_ID, SEQUENCE) => Bool;
 ConfirmTimeoutPacket(chain_id, channel_id, sequence) ==
   /\  BasePacket!ConfirmTimeoutPacket(chain_id, channel_id, sequence)
   /\
