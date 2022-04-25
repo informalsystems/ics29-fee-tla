@@ -1,8 +1,9 @@
 ---- MODULE FeeSupportedChannel -----
 
 EXTENDS
-    Sequences
-  , FeeSupportedChannelParams
+  Sequences,
+  FeeSupportedChannelVars,
+  FeeSupportedChannelConst
 
 Utils == INSTANCE Utils
 BaseChannel == INSTANCE BaseChannel

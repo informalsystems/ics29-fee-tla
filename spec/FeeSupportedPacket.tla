@@ -1,10 +1,11 @@
 ----- MODULE FeeSupportedPacket -----
 
 EXTENDS
-    Naturals
-  , Types
-  , Sequences
-  , FeeSupportedPacketParams
+  Types,
+  Naturals,
+  Sequences,
+  FeeSupportedPacketVars,
+  FeeSupportedPacketConst
 
 BasePacket == INSTANCE BasePacket
 

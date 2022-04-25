@@ -6,7 +6,8 @@ EXTENDS
   , TLC
   , FiniteSets
   , SequencesExt
-  , BankParams
+  , BankConst
+  , BankVars
 
 LOCAL Utils == INSTANCE Utils
 

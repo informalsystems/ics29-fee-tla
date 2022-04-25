@@ -1,11 +1,7 @@
----- MODULE FeeSupportedChannelParams -----
+---- MODULE FeeSupportedChannelVars -----
 
 EXTENDS
-    BaseChannelParams
-
-CONSTANTS
-    \* @type: Str;
-    VersionFees
+  BaseChannelVars
 
 VARIABLES
   \* @type: CHAIN_ID -> Bool;

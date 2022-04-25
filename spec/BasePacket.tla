@@ -1,10 +1,11 @@
 ----- MODULE BasePacket -----
 
 EXTENDS
-    Naturals
-  , Sequences
-  , FiniteSets
-  , BasePacketParams
+  Naturals,
+  Sequences,
+  FiniteSets,
+  BasePacketVars,
+  BasePacketConst
 
 Utils == INSTANCE Utils
 

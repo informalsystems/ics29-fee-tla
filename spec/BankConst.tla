@@ -1,4 +1,4 @@
------ MODULE BankParams ----
+----- MODULE BankConst ----
 
 EXTENDS Types
 
@@ -14,12 +14,5 @@ CONSTANTS
 
   \* @type: Int;
   InitialBalancePerUser
-
-VARIABLES
-  \* @type: BANK_BALANCES;
-  bank_balances,
-
-  \* @type: Seq(TRANSFER);
-  transfer_history
 
 ====

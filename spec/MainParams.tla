@@ -1,49 +1,13 @@
 ---- MODULE MainParams ----
 
-EXTENDS Apalache, Types
-
-VARIABLES
-  \* @type: BANK_BALANCES;
-  bank_balances,
-
-  \* @type: Seq(TRANSFER);
-  transfer_history,
-
-  \* @type: << CHAIN_ID, CHANNEL_ID >> -> CHANNEL_STATE;
-  all_channel_states,
-
-  \* @type: CHAIN_ID -> Bool;
-  fees_supported_table,
-
-  \* @type: << CHAIN_ID, CHANNEL_ID >> -> Bool;
-  fees_enabled_table,
-
-  \* @type: Set(Set(<< CHAIN_ID, CHANNEL_ID >>));
-  connected_channels,
-
-  \* @type: PACKET_KEY -> PACKET;
-  send_commitments,
-
-  \* @type: PACKET_KEY -> Seq(Str);
-  ack_commitments,
-
-  \* @type: Set(PACKET_KEY);
-  committed_packets,
-
-  \* @type: Set(PACKET_KEY);
-  timed_out_packets,
-
-  \* @type: PACKET_KEY -> ESCROW;
-  fee_escrows,
-
-  \* @type: Set(PACKET_KEY);
-  completed_escrows,
-
-  \* @type: Seq(RELAY);
-  relay_history,
-
-  \* @type: Set(PACKET_KEY);
-  committed_timed_out_packets
+EXTENDS
+  Types,
+  Apalache,
+  BankVars,
+  BaseChannelVars,
+  BasePacketVars,
+  FeeSupportedChannelVars,
+  FeeSupportedPacketVars
 
 \* @type: Set(CHAIN_ID);
 InitChainIds ==

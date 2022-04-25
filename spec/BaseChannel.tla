@@ -1,10 +1,11 @@
 ----- MODULE BaseChannel -----
 
 EXTENDS
-    Naturals
-  , Sequences
-  , FiniteSets
-  , BaseChannelParams
+  Naturals,
+  Sequences,
+  FiniteSets,
+  BaseChannelVars,
+  BaseChannelConst
 
 Utils == INSTANCE Utils
 

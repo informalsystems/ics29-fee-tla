@@ -1,19 +1,8 @@
------ MODULE BasePacketParams -----
+----- MODULE BasePacketVars -----
 
-EXTENDS BaseChannelParams, Types
-
-CONSTANTS
-  \* @type: Set(ADDRESS);
-  AllUsers,
-
-  \* @type: Set(Str);
-  AllSequences,
-
-  \* @type: Set(Str);
-  BasePayloads,
-
-  \* @type: Set(Str);
-  BaseAcks
+EXTENDS
+  Types,
+  BaseChannelVars
 
 VARIABLES
   \* @type: PACKET_KEY -> PACKET;
