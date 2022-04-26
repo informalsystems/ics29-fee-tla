@@ -8,7 +8,10 @@ EXTENDS
 
 Utils == INSTANCE Utils
 
+\* Uncomment this to perform random channel handshakes
 \* Channel == INSTANCE FeeSupportedChannel
+
+\* Uncomment this to use hard-coded open channels
 Channel == INSTANCE FixedChannel
 
 Packet == INSTANCE FeeSupportedPacket
@@ -66,7 +69,7 @@ HasCompletedEscrows(count) ==
   /\  Cardinality(completed_escrows) > count
 
 WantedState ==
-  /\  HasCompletedEscrows(2)
+  /\  HasCompletedEscrows(1)
   /\  FeeModulesHasZeroBalance
 
 WantedStateInvariant ==
