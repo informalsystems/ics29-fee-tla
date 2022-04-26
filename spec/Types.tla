@@ -40,7 +40,7 @@
 \*    sequence: SEQUENCE
 \* ];
 \* @typeAlias: BALANCE_KEY = << CHAIN_ID, ADDRESS >>;
-\* @typeAlias: BANK_BALANCES = (BALANCE_KEY -> Int);
+\* @typeAlias: BANK_BALANCES = BALANCE_KEY -> Int;
 Aliases == TRUE
 
 =====

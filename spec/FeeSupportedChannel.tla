@@ -10,7 +10,7 @@ BaseChannel == INSTANCE BaseChannel
 
 Init ==
   /\  BaseChannel!Init
-  /\  \E table \in [ AllChainIds -> { TRUE } ]:
+  /\  \E table \in [ AllChainIds -> BOOLEAN ]:
         fees_supported_table = table
   /\  fees_enabled_table = Utils!EmptyRecord(TRUE)
 

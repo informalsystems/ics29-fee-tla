@@ -52,14 +52,18 @@ PayPacketFee(
   /\  ack_fee >= 0
   /\  timeout_fee >= 0
   /\  ~(receive_fee = 0 /\ ack_fee = 0)
-  /\  Bank!SingleTransfer(
-        Bank!CreateTransfer(
-          chain_id
-        , user
-        , FeeModuleAccount
-        , receive_fee + ack_fee + timeout_fee
-        )
-      )
+  /\  LET
+        total_fee == receive_fee + ack_fee + timeout_fee
+      IN
+      /\  Bank!AccountBalance(chain_id, user) >= total_fee
+      /\  Bank!SingleTransfer(
+            Bank!CreateTransfer(
+              chain_id
+            , user
+            , FeeModuleAccount
+            , total_fee
+            )
+          )
   /\  LET
         escrow_key == BasePacket!PacketKey(chain_id, channel_id, sequence)
       IN

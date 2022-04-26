@@ -21,20 +21,11 @@ Init ==
   /\  Packet!Init
 
 Next ==
-\*   \/  /\  Channel!Unchanged
-\*       /\  Bank!Unchanged
-\*       /\  Packet!Unchanged
   \/  /\  Channel!Next
       /\  Bank!Unchanged
       /\  Packet!Unchanged
   \/  /\  Packet!Next
       /\  Channel!Unchanged
-  \* \/  /\  \E chain_id \in AllChainIds:
-  \*         \E sender, receiver \in AllUsers:
-  \*         \E fee \in AllFees:
-  \*            Bank!Transfer(chain_id, sender, receiver, fee)
-  \*     /\  Channel!Unchanged
-  \*     /\  Packet!Unchanged
 
 Invariant ==
   /\  Bank!Invariant
@@ -63,27 +54,22 @@ HasConnectedChannelWithFee ==
         /\  Channel!FeesEnabled(chain_b, channel_id_b)
         /\  Channel!ChannelsConnected(chain_a, channel_id_a, chain_b, channel_id_b)
 
-FindConnectChannelsWithFeeEnabled ==
-  /\  \A key \in DOMAIN fees_enabled_table:
-        fees_enabled_table[key] = TRUE
+HasRelayedPackets ==
   /\  Cardinality(DOMAIN ack_commitments) > 0
   /\  Cardinality(committed_packets) > 0
   /\  Cardinality(committed_timed_out_packets) > 0
-  /\  Cardinality(DOMAIN fee_escrows) > 0
-  /\  Cardinality(completed_escrows) > 0
-  /\  FeeModulesHasZeroBalance
-\*   /\  AllRelayersNotPaid
-\*   /\  FeeModuleHasNegativeBalance
 
-  \* /\  \E chain_id \in AllChainIds:
-  \*     \E user \in RegularUsers:
-  \*       Bank!AccountBalance(chain_id, user) > 1000
+HasCompletedEscrows(count) ==
+  /\  \E key \in DOMAIN fees_enabled_table:
+        fees_enabled_table[key] = TRUE
+  /\  Cardinality(DOMAIN fee_escrows) > 0
+  /\  Cardinality(completed_escrows) > count
 
 WantedState ==
-  FindConnectChannelsWithFeeEnabled
+  /\  HasCompletedEscrows(2)
+  /\  FeeModulesHasZeroBalance
 
 WantedStateInvariant ==
   /\  ~WantedState
-\*   TRUE
 
 ======

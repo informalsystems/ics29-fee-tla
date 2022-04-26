@@ -64,6 +64,7 @@ Invariant ==
   /\  \A account \in DOMAIN bank_balances:
         bank_balances[account] >= 0
 
+\* @type: (CHAIN_ID, ADDRESS, ADDRESS, Int) => TRANSFER;
 CreateTransfer(chain_id, sender, receiver, amount) ==
   [ chain_id
       |-> chain_id
@@ -118,11 +119,7 @@ AddTransferHistory(transfers) ==
 
 \* @type: TRANSFER => Bool;
 AddSingleTransferHistory(transfer) ==
-  LET
-    \* @type: Seq(TRANSFER);
-    transfers == << transfer >>
-  IN
-  AddTransferHistory(transfers)
+  AddTransferHistory(<< transfer >>)
 
 \* @type: TRANSFER => Bool;
 SingleTransfer(transfer) ==

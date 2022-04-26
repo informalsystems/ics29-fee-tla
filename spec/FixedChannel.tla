@@ -27,18 +27,33 @@ Invariant == Channel!Invariant
 
 \* @type: << CHAIN_ID, CHANNEL_ID >> -> CHANNEL_STATE;
 InitChannelStates == SetAsFun({
-  <<  << "1_OF_CHAIN_ID", "1_OF_CHANNEL_ID" >>,
+  <<  << "chain-1", "channel-1" >>,
       [ handshake_state |-> "Open"
-      , counterparty_chain_id |-> "9_OF_CHAIN_ID"
-      , counterparty_channel_id |-> "9_OF_CHANNEL_ID"
+      , counterparty_chain_id |-> "chain-9"
+      , counterparty_channel_id |-> "channel-9"
       , versions |-> << "fee_v1", "ics20-1" >>
       ]
   >>,
   <<
-      << "9_OF_CHAIN_ID", "9_OF_CHANNEL_ID" >>,
+      << "chain-9", "channel-9" >>,
       [ handshake_state |-> "Open"
-      , counterparty_chain_id |-> "1_OF_CHAIN_ID"
-      , counterparty_channel_id |-> "1_OF_CHANNEL_ID"
+      , counterparty_chain_id |-> "chain-1"
+      , counterparty_channel_id |-> "channel-1"
+      , versions |-> << "fee_v1", "ics20-1" >>
+      ]
+  >>,
+  <<  << "chain-2", "channel-2" >>,
+      [ handshake_state |-> "Open"
+      , counterparty_chain_id |-> "chain-8"
+      , counterparty_channel_id |-> "channel-8"
+      , versions |-> << "fee_v1", "ics20-1" >>
+      ]
+  >>,
+  <<
+      << "chain-8", "channel-8" >>,
+      [ handshake_state |-> "Open"
+      , counterparty_chain_id |-> "chain-2"
+      , counterparty_channel_id |-> "channel-2"
       , versions |-> << "fee_v1", "ics20-1" >>
       ]
   >>
@@ -46,23 +61,34 @@ InitChannelStates == SetAsFun({
 
 \* @type: Set(Set(<< CHAIN_ID, CHANNEL_ID >>));
 InitConnectedChannels == {
-  { << "1_OF_CHAIN_ID", "1_OF_CHANNEL_ID" >>,
-    << "9_OF_CHAIN_ID", "9_OF_CHANNEL_ID" >>
+  { << "chain-1", "channel-1" >>,
+    << "chain-9", "channel-9" >>
+  },
+  { << "chain-2", "channel-2" >>,
+    << "chain-8", "channel-8" >>
   }
 }
 
 \* @type: CHAIN_ID -> Bool;
 InitFeesSupportedTable == SetAsFun({
-  << "1_OF_CHAIN_ID", TRUE >>,
-  << "9_OF_CHAIN_ID", TRUE >>
+  << "chain-1", TRUE >>,
+  << "chain-9", TRUE >>,
+  << "chain-2", TRUE >>,
+  << "chain-8", TRUE >>
 })
 
 \* @type: << CHAIN_ID, CHANNEL_ID >> -> Bool;
 InitFeesEnabledTable == SetAsFun({
-  <<  << "1_OF_CHAIN_ID", "1_OF_CHANNEL_ID" >>,
+  <<  << "chain-1", "channel-1" >>,
       TRUE
   >>,
-  <<  << "9_OF_CHAIN_ID", "9_OF_CHANNEL_ID" >>,
+  <<  << "chain-9", "channel-9" >>,
+      TRUE
+  >>,
+  <<  << "chain-2", "channel-2" >>,
+      TRUE
+  >>,
+  <<  << "chain-8", "channel-8" >>,
       TRUE
   >>
 })

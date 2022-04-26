@@ -9,24 +9,46 @@ EXTENDS
   FeeSupportedChannelVars,
   FeeSupportedPacketVars
 
+\* @typeAlias: CHAIN_ID = Str;
+\* @typeAlias: CHANNEL_ID = Str;
+\* @typeAlias: SEQUENCE = Str;
+MainAliases == TRUE
+
 \* @type: Set(CHAIN_ID);
 InitChainIds ==
-  { "1_OF_CHAIN_ID"
-  \* , "2_OF_CHAIN_ID"
+  { "chain-1"
+  , "chain-2"
   \* , "3_OF_CHAIN_ID"
   }
 
 \* @type: Set(CHAIN_ID);
 CounterpartyChainIds ==
-  { "9_OF_CHAIN_ID"
-  \* , "8_OF_CHAIN_ID"
+  { "chain-9"
+  , "chain-8"
   \* , "7_OF_CHAIN_ID"
   }
 
 \* @type: CHAIN_ID;
-NullChainId == "null_OF_CHAIN_ID"
+NullChainId == "chain-null"
 
 AllChainIds == InitChainIds \union CounterpartyChainIds
+
+\* @type: Set(CHANNEL_ID);
+InitChannelIds ==
+  { "channel-1"
+  , "channel-2"
+  \* , "channel-3"
+}
+
+\* @type: Set(CHANNEL_ID);
+OpenTryChannelIds ==
+  { "channel-9"
+  , "channel-8"
+  \* , "channel-7"
+  }
+
+\* @type: CHANNEL_ID;
+NullChannelId == "channel-null"
 
 \* @type: Set(ADDRESS);
 RegularUsers ==
@@ -56,23 +78,6 @@ AllModules ==
   { FeeModuleAccount
   }
 
-\* @type: Set(CHANNEL_ID);
-InitChannelIds ==
-  { "1_OF_CHANNEL_ID"
-  \* , "2_OF_CHANNEL_ID"
-  \* , "3_OF_CHANNEL_ID"
-}
-
-\* @type: Set(CHANNEL_ID);
-OpenTryChannelIds ==
-  { "9_OF_CHANNEL_ID"
-  \* , "8_OF_CHANNEL_ID"
-  \* , "7_OF_CHANNEL_ID"
-  }
-
-\* @type: CHANNEL_ID;
-NullChannelId == "null_OF_CHANNEL_ID"
-
 ChanInitState == "Init"
 ChanOpenState == "Open"
 ChanTryOpenState == "TryOpen"
@@ -86,13 +91,15 @@ AllChannelIds == InitChannelIds \union OpenTryChannelIds
 
 \* @type: Set(SEQUENCE);
 AllSequences ==
-  { "1_OF_SEQUENCE"
-  , "2_OF_SEQUENCE"
-  , "3_OF_SEQUENCE"
+  { "sequence-1"
+  , "sequence-2"
+  , "sequence-3"
+  , "sequence-4"
+  , "sequence-5"
   }
 
 \* @type: SEQUENCE;
-NullSequence == "null_OF_SEQUENCE"
+NullSequence == "sequence-null"
 
 BasePayloads ==
   { "token-transfer"
@@ -105,10 +112,10 @@ BaseAcks ==
 AllFees ==
   { 0
   , 10
-\*   , 20
+  , 20
 \*   , 30
   }
 
-RecordHistory == FALSE
+RecordHistory == TRUE
 
 ====
